@@ -35,7 +35,7 @@ export const generateImageFromUrls = async (
     });
   }
 
-  const response = await client.responses.create({
+  const response = await client().responses.create({
     model: 'gpt-4.1',
     input: [
       {

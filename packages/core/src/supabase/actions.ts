@@ -1,5 +1,6 @@
-import supabase from './client';
 import { v4 as uuidv4 } from 'uuid';
+import supabase from "./client";
+
 
 export type Message = {
   id?: string;
@@ -13,7 +14,7 @@ export async function saveMessageToDatabase(
   userId: string,
   message: Omit<Message, 'user_id'>
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('messages')
     .insert({
       ...message,
@@ -40,7 +41,7 @@ export async function uploadBase64Image(
 
     const filename = `${uuidv4()}.jpg`;
 
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabase().storage
       .from(bucketName)
       .upload(`uploads/${filename}`, buffer, {
         contentType: 'image/jpeg',
@@ -53,7 +54,7 @@ export async function uploadBase64Image(
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from(bucketName).getPublicUrl(`uploads/${filename}`);
+    } = supabase().storage.from(bucketName).getPublicUrl(`uploads/${filename}`);
 
     return {
       path: data.path,
@@ -70,7 +71,7 @@ export async function saveImageURLToDatabase(
   imageURL: string,
   role: 'user' | 'system' | 'assistant'
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('images')
     .insert({
       image_url: imageURL,
@@ -88,7 +89,7 @@ export async function saveMessagesToDatabase(
   userID: string,
   messages: Omit<Message, 'user_id'>[]
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('messages')
     .upsert(messages.map((message) => ({ ...message, user_id: userID })))
     .select();
@@ -101,7 +102,7 @@ export async function saveMessagesToDatabase(
 }
 
 export async function getMessageHistory(userId: string, limit: number = 15) {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('messages')
     .select('*')
     .eq('user_id', userId)
@@ -113,7 +114,7 @@ export async function getMessageHistory(userId: string, limit: number = 15) {
 }
 
 export async function getLastImageUrls(userId: string, limit: number = 3) {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('images')
     .select('*')
     .eq('user_id', userId)

@@ -1,5 +1,3 @@
-const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'test';
-const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
@@ -13,7 +11,10 @@ import {
   type WhatsappMessage, Types
 } from "@ANISA/core";
 import AnisaPayload = Types.AnisaPayload;
+import { Resource } from "sst";
 
+const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'test';
+const SQS_QUEUE_URL = Resource.MessageQueue.url
 
 
 console.log(`SQS_QUEUE_URL: ${SQS_QUEUE_URL}`);

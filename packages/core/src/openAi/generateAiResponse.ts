@@ -18,7 +18,7 @@ export const generateAiResponse = async (
   message: string,
   toolCall?: ToolCall
 ) => {
-  const response = await client.responses.create({
+  const response = await client().responses.create({
     model: 'gpt-4o-mini',
     input: message,
     tools: [{ type: 'web_search_preview' }, imageGenerationTool],
@@ -53,7 +53,7 @@ export const generateAiResponse = async (
 };
 
 export const generateImage = async (prompt: string) => {
-  const response = await client.images.generate({
+  const response = await client().images.generate({
     model: 'gpt-image-1',
     prompt: 'draw ' + prompt,
     n: 1,

@@ -44,21 +44,21 @@ export default $config({
             handler: "packages/functions/src/webhook.handler",
             environment: {
                 OPENAI_API_KEY: openAiApiKey.value!,
-                SQS_QUEUE_URL: messageQueue.queueUrl,
+                SQS_QUEUE_URL: messageQueue.url,
                 ENVIRONMENT: process.env.ENVIRONMENT || "development",
                 SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey.value!,
-                SUPABASE_URL: process.env.SUPABASE_URL || supabaseUrl.value!,
+                SUPABASE_URL: supabaseUrl.value!,
                 GRAPH_API_TOKEN: graphApiToken.value!,
                 WEBHOOK_VERIFY_TOKEN: webhookVerifyToken.value!,
             },
-            bind: [messageQueue],
+            link: [messageQueue],
         });
 
         new sst.aws.Function("ResponseGenerator", {
             handler: "packages/functions/src/response.handler",
             timeout: "5 minutes",
             environment: {
-                SQS_QUEUE_URL: mediaQueue.queueUrl,
+                SQS_QUEUE_URL: mediaQueue.url,
                 ENVIRONMENT: process.env.ENVIRONMENT || "development",
                 GRAPH_API_TOKEN: graphApiToken.value!,
                 OPENAI_API_KEY: openAiApiKey.value!,
@@ -77,7 +77,7 @@ export default $config({
                 API_TOKEN: apiToken.value!,
                 GENERATION_QUALITY: generationQuality.value!,
             },
-            bind: [mediaQueue],
+            link: [mediaQueue],
         });
 
         new sst.aws.Function("MediaGenerator", {
