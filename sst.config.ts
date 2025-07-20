@@ -18,7 +18,8 @@ export default $config({
         });
         mediaQueue.subscribe("packages/functions/src/media.handler");
 
-        // Lambda Functions
+
+        // // Lambda Functions
         const webhookReceiver = new sst.aws.Function("WhatsAppWebhook", {
             handler: "packages/functions/src/webhook.handler",
             environment: {
@@ -30,7 +31,6 @@ export default $config({
             },
             bind: [messageQueue],
         });
-
         new sst.aws.Function("ResponseGenerator", {
             handler: "packages/functions/src/response.handler",
             timeout: "5 minutes",
@@ -44,7 +44,7 @@ export default $config({
                 SUPABASE_URL: process.env.SUPABASE_URL!,
                 OPENAI_ORGANIZATION_ID: process.env.OPENAI_ORGANIZATION_ID!,
             },
-            bind: [messageQueue, mediaQueue],
+            bind: [mediaQueue],
         });
 
         new sst.aws.Function("MediaGenerator", {
@@ -60,12 +60,11 @@ export default $config({
                 SUPABASE_URL:  process.env.SUPABASE_URL!,
                 OPENAI_ORGANIZATION_ID: process.env.OPENAI_ORGANIZATION_ID!,
             },
-            bind: [mediaQueue],
         });
 
         const api = new sst.aws.ApiGatewayV2("WhatsAppApi");
-        api.route("GET /", webhookReceiver);
-        api.route("POST /", webhookReceiver);
+        api.route("GET /", webhookReceiver.name);
+        api.route("POST /", webhookReceiver.name);
 
     },
 });
