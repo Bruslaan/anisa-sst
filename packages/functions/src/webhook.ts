@@ -16,9 +16,6 @@ import { Resource } from "sst";
 const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'test';
 const SQS_QUEUE_URL = Resource.MessageQueue.url
 
-
-console.log(`SQS_QUEUE_URL: ${SQS_QUEUE_URL}`);
-
 const sqsClient = new SQSClient({
   region: process.env.AWS_REGION || 'eu-central-1',
 });
@@ -143,6 +140,9 @@ const handleWhatsAppMessage = async (
 export const handler = async (
     event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
+
+    console.log('Received event:', JSON.stringify(event, null, 2));
+
   if (event.httpMethod === 'GET') {
     return handleWebhookVerification(event);
   }

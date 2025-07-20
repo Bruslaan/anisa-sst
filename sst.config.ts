@@ -38,8 +38,6 @@ export default $config({
         });
         mediaQueue.subscribe("packages/functions/src/media.handler");
 
-        console.log("Ruslan", openAiApiKey.value!)
-
         new sst.aws.Function("WhatsAppWebhook", {
             handler: "packages/functions/src/webhook.handler",
             environment: {
@@ -105,7 +103,10 @@ export default $config({
             },
         });
 
-        const api = new sst.aws.ApiGatewayV2("WhatsAppApi");
+        const api = new sst.aws.ApiGatewayV2("WhatsAppApi", {
+            link: [messageQueue],
+        });
+
         api.route("GET /", "packages/functions/src/webhook.handler");
         api.route("POST /", "packages/functions/src/webhook.handler");
 
