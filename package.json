@@ -1,5 +1,5 @@
 {
-  "name": "monorepo-template",
+  "name": "ANISA",
   "version": "0.0.0",
   "workspaces": [
     "packages/*"
@@ -10,6 +10,8 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.848.0",
+    "openai": "^5.10.1",
     "sst": "^3"
   }
 }
