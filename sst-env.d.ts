@@ -17,6 +17,10 @@ declare module "sst" {
       "type": "sst.aws.Queue"
       "url": string
     }
+    "ResponseGenerator": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
     "WhatsAppApi": {
       "type": "sst.aws.ApiGatewayV2"
       "url": string
