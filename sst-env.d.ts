@@ -5,6 +5,26 @@
 
 declare module "sst" {
   export interface Resource {
+    "API_TOKEN": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "APP_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "GENERATION_QUALITY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "GRAPH_API_TOKEN": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "IDEMPOTENCE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "MediaGenerator": {
       "name": string
       "type": "sst.aws.Function"
@@ -17,9 +37,49 @@ declare module "sst" {
       "type": "sst.aws.Queue"
       "url": string
     }
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "OPENAI_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "OPENAI_ORGANIZATION_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "OPENAI_PROJECT_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "RESEND_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ResponseGenerator": {
       "name": string
       "type": "sst.aws.Function"
+    }
+    "STRIPE_SECRET_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "STRIPE_WEBHOOK_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SUPABASE_SERVICE_ROLE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SUPABASE_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "WEBHOOK_VERIFY_TOKEN": {
+      "type": "sst.sst.Secret"
+      "value": string
     }
     "WhatsAppApi": {
       "type": "sst.aws.ApiGatewayV2"
@@ -28,6 +88,14 @@ declare module "sst" {
     "WhatsAppWebhook": {
       "name": string
       "type": "sst.aws.Function"
+    }
+    "YOOKASSA_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "YOOKASSA_SHOP_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
     }
   }
 }

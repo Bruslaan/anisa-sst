@@ -2,8 +2,6 @@ import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import {Types, Whatsapp, Supabase} from "@ANISA/core";
 
-
-
 const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'test';
 const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 
