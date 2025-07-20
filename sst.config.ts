@@ -38,15 +38,16 @@ export default $config({
         });
         mediaQueue.subscribe("packages/functions/src/media.handler");
 
+        console.log("Ruslan", openAiApiKey.value!)
 
         new sst.aws.Function("WhatsAppWebhook", {
             handler: "packages/functions/src/webhook.handler",
             environment: {
-                OPENAI_API_KEY: "openAiApiKey.value!",
+                OPENAI_API_KEY: openAiApiKey.value!,
                 SQS_QUEUE_URL: messageQueue.queueUrl,
                 ENVIRONMENT: process.env.ENVIRONMENT || "development",
                 SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey.value!,
-                SUPABASE_URL: supabaseUrl.value!,
+                SUPABASE_URL: process.env.SUPABASE_URL || supabaseUrl.value!,
                 GRAPH_API_TOKEN: graphApiToken.value!,
                 WEBHOOK_VERIFY_TOKEN: webhookVerifyToken.value!,
             },
@@ -60,7 +61,7 @@ export default $config({
                 SQS_QUEUE_URL: mediaQueue.queueUrl,
                 ENVIRONMENT: process.env.ENVIRONMENT || "development",
                 GRAPH_API_TOKEN: graphApiToken.value!,
-                OPENAI_API_KEY: "openAiApiKey.value!",
+                OPENAI_API_KEY: openAiApiKey.value!,
                 OPENAI_PROJECT_ID: openAiProjectId.value!,
                 SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey.value!,
                 SUPABASE_URL: supabaseUrl.value!,
@@ -84,7 +85,7 @@ export default $config({
             timeout: "15 minutes",
             memory: "2048 MB",
             environment: {
-                OPENAI_API_KEY: "openAiApiKey.value!",
+                OPENAI_API_KEY: openAiApiKey.value!,
                 ENVIRONMENT: process.env.ENVIRONMENT || "development",
                 GRAPH_API_TOKEN: graphApiToken.value!,
                 OPENAI_PROJECT_ID: openAiProjectId.value!,

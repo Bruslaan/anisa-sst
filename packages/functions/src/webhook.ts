@@ -1,9 +1,22 @@
-import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import {Types, Whatsapp, Supabase} from "@ANISA/core";
-
 const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'test';
 const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
+
+import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import {
+  isAWhatsappMessage,
+  extractWAMessage,
+  getMediaURL,
+  downloadMediaToStream,
+  streamToBase64,
+  uploadBase64Image,
+  type WhatsappMessage, Types
+} from "@ANISA/core";
+import AnisaPayload = Types.AnisaPayload;
+
+
+
+console.log(`SQS_QUEUE_URL: ${SQS_QUEUE_URL}`);
 
 const sqsClient = new SQSClient({
   region: process.env.AWS_REGION || 'eu-central-1',
@@ -31,19 +44,19 @@ const handleWebhookVerification = (
 };
 
 const processImageMedia = async (
-    waMessage: Whatsapp.WaMessage
+    waMessage: WhatsappMessage
 ): Promise<string | undefined> => {
   if (waMessage.type !== 'image' || !waMessage.image?.id) {
     return undefined;
   }
 
   try {
-    const imageUrl = await Whatsapp.getMediaURL(waMessage.image.id);
+    const imageUrl = await getMediaURL(waMessage.image.id);
     console.log('Image URL:', imageUrl);
 
-    const base64Image = await Whatsapp.downloadMediaToStream(imageUrl);
-    const stream = await Whatsapp.streamToBase64(base64Image);
-    const { publicUrl } = await Supabase.uploadBase64Image(stream as string, 'images');
+    const base64Image = await downloadMediaToStream(imageUrl);
+    const stream = await streamToBase64(base64Image);
+    const { publicUrl } = await uploadBase64Image(stream as string, 'images');
 
     console.log('Media URL:', publicUrl);
     return publicUrl;
@@ -68,7 +81,7 @@ const handleWhatsAppMessage = async (
     };
   }
 
-  if (!Whatsapp.isWAMessage(parsedBody)) {
+  if (!isAWhatsappMessage(parsedBody)) {
     console.error('Received invalid message format');
     return {
       statusCode: 400,
@@ -85,9 +98,9 @@ const handleWhatsAppMessage = async (
   }
 
   try {
-    const waMessage = Whatsapp.extractWaMessage(parsedBody);
+    const waMessage = extractWAMessage(parsedBody);
 
-    const sqsPayload: Types.AnisaPayload = {
+    const sqsPayload: AnisaPayload = {
       id: waMessage.id,
       type: waMessage.type as 'audio' | 'image' | 'text',
       text: waMessage.text?.body,
