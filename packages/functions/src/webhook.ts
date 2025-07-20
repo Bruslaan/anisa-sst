@@ -1,8 +1,6 @@
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import {Types} from "@ANISA/core/types";
-import {Whatsapp} from "@ANISA/core/whatsapp";
-import {Supabase} from "@ANISA/core/supabase";
+import {Types, Whatsapp, Supabase} from "@ANISA/core";
 
 
 

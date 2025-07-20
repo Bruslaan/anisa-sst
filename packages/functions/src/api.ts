@@ -1,6 +1,6 @@
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import {Types} from "@ANISA/core/types";
+import {Types} from "@ANISA/core";
 
 const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 const API_TOKEN = process.env.API_TOKEN || 'default_api_token';

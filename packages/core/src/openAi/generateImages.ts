@@ -1,5 +1,5 @@
-import { client } from '@/openAi/client';
-import { uploadBase64Image } from '@/supabase/actions';
+import { client } from './client';
+import { uploadBase64Image } from '../supabase/actions';
 import { ResponseInputContent } from 'openai/resources/responses/responses';
 
 async function downloadImageAsBase64(url: string): Promise<string> {

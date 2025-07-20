@@ -1,8 +1,6 @@
 import { SQSEvent, SQSRecord } from 'aws-lambda';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
-import {Types} from "@ANISA/core/types";
-import {ReplyService} from "@ANISA/core/reply-service";
-import {OpenAi} from "@ANISA/core/openAi";
+import {Types, ReplyService, OpenAi} from "@ANISA/core";
 
 const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 const sqsClient = new SQSClient({

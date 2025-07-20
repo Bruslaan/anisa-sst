@@ -1,7 +1,5 @@
 import { SQSEvent } from 'aws-lambda';
-import {Types} from "@ANISA/core/types";
-import {ReplyService} from "@ANISA/core/reply-service";
-import {OpenAi} from "@ANISA/core/openAi";
+import {Types, ReplyService, OpenAi} from "@ANISA/core";
 
 export const handler = async (
     event: SQSEvent

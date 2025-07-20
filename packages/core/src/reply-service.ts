@@ -3,8 +3,8 @@ import {
   getBusinessPhoneNumberId,
   reply,
   sendImage,
-} from '@ANISA/core/whatsapp/helper';
-import { Types } from '@ANISA/core/types';
+} from './whatsapp/helper';
+import { Types } from './types';
 
 export module ReplyService {
   export const replyToProvider = async (message: Types.AnisaPayload) => {

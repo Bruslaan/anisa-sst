@@ -1,9 +1,9 @@
-import { client } from '@/openAi/client';
-import { uploadBase64Image } from '@/supabase/actions';
+import { client } from './client';
+import { uploadBase64Image } from '../supabase/actions';
 import {
   imageGenerationTool,
   imageGenerationToolName,
-} from '@/openAi/custom-tools';
+} from './custom-tools';
 
 type ToolCall = {
   (
