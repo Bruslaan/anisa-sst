@@ -1,7 +1,6 @@
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import {Types} from "@ANISA/core/types";
-import parseAnisaPayload = Types.parseAnisaPayload;
 
 const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 const API_TOKEN = process.env.API_TOKEN || 'default_api_token';
@@ -51,7 +50,7 @@ const handleApiRequest = async (
     }
 
     try {
-        const anisaPayload = parseAnisaPayload(event.body);
+        const anisaPayload = Types.parseAnisaPayload(event.body);
 
         const sqsCommand = new SendMessageCommand({
             QueueUrl: SQS_QUEUE_URL,

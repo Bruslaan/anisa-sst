@@ -1,16 +1,9 @@
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import {Types} from "@ANISA/core/types";
-import AnisaPayload = Types.AnisaPayload;
 import {Whatsapp} from "@ANISA/core/whatsapp";
-import WaMessage = Whatsapp.WaMessage;
 import {Supabase} from "@ANISA/core/supabase";
-import uploadBase64Image = Supabase.uploadBase64Image;
-import getMediaURL = Whatsapp.getMediaURL;
-import streamToBase64 = Whatsapp.streamToBase64;
-import downloadMediaToStream = Whatsapp.downloadMediaToStream;
-import isWAMessage = Whatsapp.isWAMessage;
-import extractWaMessage = Whatsapp.extractWaMessage;
+
 
 
 const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'test';
@@ -42,19 +35,19 @@ const handleWebhookVerification = (
 };
 
 const processImageMedia = async (
-    waMessage: WaMessage
+    waMessage: Whatsapp.WaMessage
 ): Promise<string | undefined> => {
   if (waMessage.type !== 'image' || !waMessage.image?.id) {
     return undefined;
   }
 
   try {
-    const imageUrl = await getMediaURL(waMessage.image.id);
+    const imageUrl = await Whatsapp.getMediaURL(waMessage.image.id);
     console.log('Image URL:', imageUrl);
 
-    const base64Image = await downloadMediaToStream(imageUrl);
-    const stream = await streamToBase64(base64Image);
-    const { publicUrl } = await uploadBase64Image(stream as string, 'images');
+    const base64Image = await Whatsapp.downloadMediaToStream(imageUrl);
+    const stream = await Whatsapp.streamToBase64(base64Image);
+    const { publicUrl } = await Supabase.uploadBase64Image(stream as string, 'images');
 
     console.log('Media URL:', publicUrl);
     return publicUrl;
@@ -79,7 +72,7 @@ const handleWhatsAppMessage = async (
     };
   }
 
-  if (!isWAMessage(parsedBody)) {
+  if (!Whatsapp.isWAMessage(parsedBody)) {
     console.error('Received invalid message format');
     return {
       statusCode: 400,
@@ -96,9 +89,9 @@ const handleWhatsAppMessage = async (
   }
 
   try {
-    const waMessage = extractWaMessage(parsedBody);
+    const waMessage = Whatsapp.extractWaMessage(parsedBody);
 
-    const sqsPayload: AnisaPayload = {
+    const sqsPayload: Types.AnisaPayload = {
       id: waMessage.id,
       type: waMessage.type as 'audio' | 'image' | 'text',
       text: waMessage.text?.body,

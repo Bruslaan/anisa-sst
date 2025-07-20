@@ -1,13 +1,8 @@
 import { SQSEvent, SQSRecord } from 'aws-lambda';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import {Types} from "@ANISA/core/types";
-import BatchItemFailure = Types.BatchItemFailure;
-import parseAnisaPayload = Types.parseAnisaPayload;
-import AnisaPayload = Types.AnisaPayload;
 import {ReplyService} from "@ANISA/core/reply-service";
-import replyToProvider = ReplyService.replyToProvider;
 import {OpenAi} from "@ANISA/core/openAi";
-import generateAiResponse = OpenAi.generateAiResponse;
 
 const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 const sqsClient = new SQSClient({
@@ -16,7 +11,7 @@ const sqsClient = new SQSClient({
 
 export const handler = async (
     event: SQSEvent
-): Promise<{ batchItemFailures: BatchItemFailure[] }> => {
+): Promise<{ batchItemFailures: Types.BatchItemFailure[] }> => {
     console.log(
         `Attempting to process ${event.Records.length} messages concurrently.`
     );
@@ -63,7 +58,7 @@ export const handler = async (
 };
 
 const processMessage = async (record: SQSRecord): Promise<void> => {
-    const anisaPayloadMessage = parseAnisaPayload(record.body);
+    const anisaPayloadMessage = Types.parseAnisaPayload(record.body);
 
     console.log(
         `Processing ${anisaPayloadMessage.provider} ${anisaPayloadMessage.type} message: ${anisaPayloadMessage.id} (SQS ID: ${record.messageId})`
@@ -85,7 +80,7 @@ const processMessage = async (record: SQSRecord): Promise<void> => {
 };
 
 const handleTextMessage = async (
-    message: AnisaPayload,
+    message: Types.AnisaPayload,
     sqsMessageId: string
 ) => {
     if (!message.text?.trim()) {
@@ -96,7 +91,7 @@ const handleTextMessage = async (
     }
 
     const startTime = Date.now();
-    const responseText = await generateAiResponse(
+    const responseText = await OpenAi.generateAiResponse(
         message.text,
         async (toolName: string, functionArguments: Record<string, unknown>) => {
             console.log(toolName, functionArguments);
@@ -126,7 +121,7 @@ const handleTextMessage = async (
     };
 
     const replyStartTime = Date.now();
-    await replyToProvider(message);
+    await ReplyService.replyToProvider(message);
     const replyTime = Date.now() - replyStartTime;
     console.log(
         `Replied to provider for ${message.id} (SQS ID: ${sqsMessageId}) in ${replyTime}ms.`
@@ -136,7 +131,7 @@ const handleTextMessage = async (
     );
 };
 
-const handleAudioMessage = async (message: AnisaPayload) => {
+const handleAudioMessage = async (message: Types.AnisaPayload) => {
     if (!message.mediaUrl) {
         throw new Error(`Audio message ${message.id} missing media URL`);
     }
@@ -149,7 +144,7 @@ const handleAudioMessage = async (message: AnisaPayload) => {
     );
 };
 
-const handleImageMessage = async (message: AnisaPayload) => {
+const handleImageMessage = async (message: Types.AnisaPayload) => {
     if (!message.mediaUrl) {
         throw new Error(`Image message ${message.id} missing media URL`);
     }

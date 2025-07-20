@@ -1,24 +1,18 @@
 import { SQSEvent } from 'aws-lambda';
 import {Types} from "@ANISA/core/types";
-import BatchItemFailure = Types.BatchItemFailure;
-import AnisaPayload = Types.AnisaPayload;
-import parseAnisaPayload = Types.parseAnisaPayload;
 import {ReplyService} from "@ANISA/core/reply-service";
-import replyToProvider = ReplyService.replyToProvider;
 import {OpenAi} from "@ANISA/core/openAi";
-import generateImageFromUrls = OpenAi.generateImageFromUrls;
-import generateImage = OpenAi.generateImage;
 
 export const handler = async (
     event: SQSEvent
-): Promise<{ batchItemFailures: BatchItemFailure[] }> => {
+): Promise<{ batchItemFailures: Types.BatchItemFailure[] }> => {
     console.log(
         `Attempting to generate ${event.Records.length} images concurrently.`
     );
 
     // Store the whole batch into this array
     const processingPromises = event.Records.map((sqsMessage) => {
-        const anisaPayload: AnisaPayload = parseAnisaPayload(sqsMessage.body);
+        const anisaPayload: Types.AnisaPayload = Types.parseAnisaPayload(sqsMessage.body);
         return processImageGeneration(anisaPayload);
     });
 
@@ -58,7 +52,7 @@ export const handler = async (
     };
 };
 
-const processImageGeneration = async (message: AnisaPayload): Promise<void> => {
+const processImageGeneration = async (message: Types.AnisaPayload): Promise<void> => {
     const startTime = Date.now();
 
     console.log(
@@ -83,10 +77,10 @@ const processImageGeneration = async (message: AnisaPayload): Promise<void> => {
         console.log(
             `Generating image with prompt and ${message.mediaUrl.length} reference images`
         );
-        imageUrl = await generateImageFromUrls(message.text, message.mediaUrl);
+        imageUrl = await OpenAi.generateImageFromUrls(message.text, message.mediaUrl);
     } else {
         console.log(`Generating image with text prompt only`);
-        imageUrl = await generateImage(message.text);
+        imageUrl = await OpenAi.generateImage(message.text);
     }
 
     const aiResponseTime = Date.now() - startTime;
@@ -101,7 +95,7 @@ const processImageGeneration = async (message: AnisaPayload): Promise<void> => {
     };
 
     const replyStartTime = Date.now();
-    await replyToProvider(message);
+    await ReplyService.replyToProvider(message);
     const replyTime = Date.now() - replyStartTime;
     console.log(`Replied to provider for ${message.id}  in ${replyTime}ms.`);
     console.log(
