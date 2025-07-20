@@ -1,15 +1,17 @@
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import {
-  downloadMediaToStream,
-  extractWAMessage,
-  getMediaURL,
-  isAWhatsappMessage,
-  streamToBase64,
-} from '@ANISA/core/whatsapp/helper';
-import { AnisaPayload } from '@ANISA/core/types';
-import { uploadBase64Image } from '@ANISA/core/supabase/actions';
-import { WhatsappMessage } from '@ANISA/core/whatsapp/wa-types';
+import {Types} from "@ANISA/core/types";
+import AnisaPayload = Types.AnisaPayload;
+import {Whatsapp} from "@ANISA/core/whatsapp";
+import WaMessage = Whatsapp.WaMessage;
+import {Supabase} from "@ANISA/core/supabase";
+import uploadBase64Image = Supabase.uploadBase64Image;
+import getMediaURL = Whatsapp.getMediaURL;
+import streamToBase64 = Whatsapp.streamToBase64;
+import downloadMediaToStream = Whatsapp.downloadMediaToStream;
+import isWAMessage = Whatsapp.isWAMessage;
+import extractWaMessage = Whatsapp.extractWaMessage;
+
 
 const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'test';
 const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
@@ -40,7 +42,7 @@ const handleWebhookVerification = (
 };
 
 const processImageMedia = async (
-    waMessage: WhatsappMessage
+    waMessage: WaMessage
 ): Promise<string | undefined> => {
   if (waMessage.type !== 'image' || !waMessage.image?.id) {
     return undefined;
@@ -77,7 +79,7 @@ const handleWhatsAppMessage = async (
     };
   }
 
-  if (!isAWhatsappMessage(parsedBody)) {
+  if (!isWAMessage(parsedBody)) {
     console.error('Received invalid message format');
     return {
       statusCode: 400,
@@ -94,7 +96,7 @@ const handleWhatsAppMessage = async (
   }
 
   try {
-    const waMessage = extractWAMessage(parsedBody);
+    const waMessage = extractWaMessage(parsedBody);
 
     const sqsPayload: AnisaPayload = {
       id: waMessage.id,

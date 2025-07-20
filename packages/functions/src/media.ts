@@ -1,8 +1,13 @@
 import { SQSEvent } from 'aws-lambda';
-import { AnisaPayload, BatchItemFailure, parseAnisaPayload } from '@ANISA/core/types';
-import { generateImage } from '@ANISA/core/openAi/generateAiResponse';
-import { generateImageFromUrls } from '@ANISA/core/openAi/generateImages';
-import { replyToProvider } from '@ANISA/core/reply-service';
+import {Types} from "@ANISA/core/types";
+import BatchItemFailure = Types.BatchItemFailure;
+import AnisaPayload = Types.AnisaPayload;
+import parseAnisaPayload = Types.parseAnisaPayload;
+import {ReplyService} from "@ANISA/core/reply-service";
+import replyToProvider = ReplyService.replyToProvider;
+import {OpenAi} from "@ANISA/core/openAi";
+import generateImageFromUrls = OpenAi.generateImageFromUrls;
+import generateImage = OpenAi.generateImage;
 
 export const handler = async (
     event: SQSEvent

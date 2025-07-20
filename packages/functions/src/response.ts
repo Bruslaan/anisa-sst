@@ -1,8 +1,13 @@
 import { SQSEvent, SQSRecord } from 'aws-lambda';
-import { generateAiResponse } from '@ANISA/core/openAi/generateAiResponse';
-import { replyToProvider } from '@ANISA/core/reply-service';
-import { AnisaPayload, BatchItemFailure, parseAnisaPayload } from '@ANISA/core/types';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import {Types} from "@ANISA/core/types";
+import BatchItemFailure = Types.BatchItemFailure;
+import parseAnisaPayload = Types.parseAnisaPayload;
+import AnisaPayload = Types.AnisaPayload;
+import {ReplyService} from "@ANISA/core/reply-service";
+import replyToProvider = ReplyService.replyToProvider;
+import {OpenAi} from "@ANISA/core/openAi";
+import generateAiResponse = OpenAi.generateAiResponse;
 
 const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 const sqsClient = new SQSClient({

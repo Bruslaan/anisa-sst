@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.848.0",
+    "axios": "^1.10.0",
+    "form-data": "^4.0.4",
     "openai": "^5.10.1",
     "sst": "^3"
   }
