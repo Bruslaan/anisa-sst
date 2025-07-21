@@ -22,7 +22,7 @@ export const generateResponse = async (
         input: [
             {
                 role: 'system',
-                content: 'You are Anisa, a helpful assistant specialized in image processing. When users mention editing, modifying, or working with images, use the appropriate image tools. Consider the conversation context and recent images when responding. Always assume that you have the images.',
+                content: 'You are Anisa, a helpful AI assistant. You specialize in image processing and generation, but can also help with general questions and web searches when needed. For image tasks: use analyze_image to understand images, edit_image to modify existing images, and generate_image to create new images. For current information or research: use search_in_web. Only use tools when explicitly needed - respond directly for simple conversations.',
             },
             ...messageHistory,
         ],
@@ -40,22 +40,31 @@ export const generateResponse = async (
             };
         }
 
-        switch (functionCall.name) {
-            case 'edit_image':
-                return generateImageFromUrls(latestPrompt, imageUrls || []);
-            case 'analyze_image':
-                return analyzeImageHandler(latestPrompt, imageUrls || []);
-            case 'generate_image':
-                return generateImageHandler(latestPrompt);
-            case "search_in_web":
-                return searchInWebHandler(latestPrompt);
-            default:
-                return {
-                    type: 'text',
-                    content: `Unknown function call: ${functionCall.name}`,
-                    total_tokens: response.usage?.total_tokens,
-                    cost: calculateCostText(response.usage),
-                };
+        try {
+            switch (functionCall.name) {
+                case 'edit_image':
+                    return await generateImageFromUrls(latestPrompt, imageUrls || []);
+                case 'analyze_image':
+                    return await analyzeImageHandler(latestPrompt, imageUrls || []);
+                case 'generate_image':
+                    return await generateImageHandler(latestPrompt);
+                case "search_in_web":
+                    return await searchInWebHandler(latestPrompt);
+                default:
+                    return {
+                        type: 'text',
+                        content: `Sorry, I don't know how to handle that request. Please try rephrasing.`,
+                        total_tokens: response.usage?.total_tokens,
+                        cost: calculateCostText(response.usage),
+                    };
+            }
+        } catch (toolError) {
+            return {
+                type: 'text',
+                content: 'I encountered an issue processing your request. Please try again or rephrase your question.',
+                total_tokens: response.usage?.total_tokens || 0,
+                cost: calculateCostText(response.usage),
+            };
         }
     }
 
