@@ -65,3 +65,20 @@ The application uses SST Secrets for environment variables including:
 - The core package exports modules that can be imported as `@ANISA/core/moduleName`
 - Functions package depends on core package for shared logic
 - All packages use ES modules (`"type": "module"`)
+
+## Key Implementation Patterns
+
+### Error Handling
+- SQS handlers return `batchItemFailures` array to retry failed messages
+- Use Promise.allSettled for concurrent processing with graceful partial failures
+- Validation errors are thrown early to prevent invalid data processing
+
+### Module Architecture
+- Core package exports both namespace modules (legacy) and named exports (preferred)
+- `Types.parseAnisaPayload()` validates and normalizes message payloads
+- ReplyService handles provider-specific response sending (currently WhatsApp only)
+
+### OpenAI Integration
+- Tool calls trigger image generation by forwarding requests to MediaQueue
+- Supports both text-only and image-reference-based DALL-E generation
+- Custom tools are defined in `packages/core/src/openAi/custom-tools.ts`
