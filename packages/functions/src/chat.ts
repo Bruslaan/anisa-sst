@@ -45,6 +45,8 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
             const body = JSON.parse(event.body || '{}');
             const {userId, message, image} = body;
 
+            console.log("Ruslan", userId, message, image);
+
             if (!userId) {
                 return createResponse(400, {error: 'userId is required'});
             }
@@ -557,22 +559,39 @@ const getChatHTML = () => `
             });
         }
         
+        // Handle file button click
+        fileButton.addEventListener('click', (e) => {
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
+        
         // Handle file selection
         fileInput.addEventListener('change', (e) => {
+            console.log('File input change event fired');
             const file = e.target.files[0];
+            console.log('Selected file:', file);
+            
             if (file && file.type.startsWith('image/')) {
+                console.log('Valid image file:', file.name, 'type:', file.type);
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    selectedImage = e.target.result;
+                reader.onload = (readerEvent) => {
+                    selectedImage = readerEvent.target.result;
+                    console.log('FileReader loaded, selectedImage length:', selectedImage ? selectedImage.length : 'null');
                     
                     // Update button to show image preview
                     fileButton.classList.add('has-image');
-                    fileButton.style.backgroundImage = \`url(\${e.target.result})\`;
+                    fileButton.style.backgroundImage = \`url(\${selectedImage})\`;
                     fileButton.querySelector('span').style.display = 'none';
                     
-                    console.log('Image selected:', file.name);
+                    console.log('Image preview updated, selectedImage set to:', selectedImage ? 'data loaded' : 'null');
+                };
+                reader.onerror = (err) => {
+                    console.error('FileReader error:', err);
                 };
                 reader.readAsDataURL(file);
+            } else {
+                console.log('No file selected or invalid file type');
             }
         });
         
@@ -649,12 +668,15 @@ const getChatHTML = () => `
             const message = messageInput.value.trim();
             const userId = userIdInput.value.trim();
             
+            console.log('sendMessage called, selectedImage:', selectedImage ? 'has data' : 'null/undefined', 'length:', selectedImage ? selectedImage.length : 'N/A');
+            
             if (!userId) {
                 alert('Please enter a user ID');
                 return;
             }
             
             if (!message && !selectedImage) {
+                console.log('No message and no image, returning');
                 return;
             }
             
@@ -672,9 +694,7 @@ const getChatHTML = () => `
                 addMessage('📷 Image attached', 'user');
             }
             
-            // Clear inputs
-            messageInput.value = '';
-            resetFileButton();
+     
             
             // Show typing indicator
             setTyping(true);
@@ -684,16 +704,25 @@ const getChatHTML = () => `
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
                 
+                const requestData = {
+                    userId,
+                    message: message || undefined,
+                    image: selectedImage || undefined
+                };
+                
+                console.log('Sending request:', {
+                    userId,
+                    message: message || 'no message',
+                    hasImage: !!selectedImage,
+                    imageLength: selectedImage ? selectedImage.length : 0
+                });
+                
                 const response = await fetch('/chat/message', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        userId,
-                        message: message || undefined,
-                        image: selectedImage || undefined
-                    }),
+                    body: JSON.stringify(requestData),
                     signal: controller.signal
                 });
                 
@@ -730,6 +759,9 @@ const getChatHTML = () => `
                 document.querySelector('.chat-container').classList.remove('loading');
                 
                 // Already cleared by resetFileButton()
+                       // Clear inputs
+            messageInput.value = '';
+            resetFileButton();
                 
                 // Focus input
                 messageInput.focus();
