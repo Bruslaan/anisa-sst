@@ -66,6 +66,7 @@ export default $config({
             handler: "packages/functions/src/response.handler",
             environment: getSharedEnv(),
             link: [mediaQueue],
+            timeout: "5 minutes",
         });
 
         const api = new sst.aws.ApiGatewayV2("WaWebhook");
