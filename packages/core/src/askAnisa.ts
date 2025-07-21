@@ -34,6 +34,7 @@ const createMessage = (
     created_at: new Date().toISOString(),
 });
 
+
 export const askAnisa = async (
     payload: AnisaPayload
 ): Promise<ResponseStructureOutput> => {
@@ -82,3 +83,10 @@ export const askAnisa = async (
         };
     }
 };
+
+
+export module Anisa {
+    export type Payload = AnisaPayload;
+    export type Response = ResponseStructureOutput;
+    export const askAnisaFn = askAnisa;
+}

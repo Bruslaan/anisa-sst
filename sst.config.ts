@@ -78,6 +78,14 @@ export default $config({
         api.route("GET /", handler);
         api.route("POST /", handler);
 
+        // Chat App API
+        const chatHandler = {
+            handler: "packages/functions/src/chat.handler",
+            environment: getSharedEnv(),
+        };
+        api.route("GET /chat", chatHandler);
+        api.route("POST /chat/message", chatHandler);
+        api.route("OPTIONS /chat/message", chatHandler);
 
     },
 });
