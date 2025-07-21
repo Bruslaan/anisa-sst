@@ -73,9 +73,8 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "WhatsAppWebhook": {
-      "name": string
-      "type": "sst.aws.Function"
+    "WaWebhook": {
+      "type": "sst.aws.ApiGatewayV2"
       "url": string
     }
     "YOOKASSA_API_KEY": {

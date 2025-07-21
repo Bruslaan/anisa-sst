@@ -62,21 +62,21 @@ export default $config({
         const messageQueue = new sst.aws.Queue("MessageQueue", {
             fifo: true,
         })
-        messageQueue.subscribe( {
+        messageQueue.subscribe({
             handler: "packages/functions/src/response.handler",
             environment: getSharedEnv(),
             link: [mediaQueue],
         });
 
-        new sst.aws.Function("WhatsAppWebhook", {
+        const api = new sst.aws.ApiGatewayV2("WaWebhook");
+
+        const handler = {
             handler: "packages/functions/src/webhook.handler",
-            url: true,
-            environment: {
-                ...getSharedEnv({
-                    SQS_QUEUE_URL: messageQueue.url,
-                }),
-            },
-            link: [messageQueue, secrets.webhookVerifyToken],
-        });
+            environment: getSharedEnv({SQS_QUEUE_URL: messageQueue.url})
+        };
+        api.route("GET /", handler);
+        api.route("POST /", handler);
+
+
     },
 });
