@@ -6,8 +6,9 @@ test("askAnisa", async () => {
 
     const response = await askAnisa({
         userId: 'example-user-id',
-        prompt: 'hi how are you',
+        prompt: 'But keet the previous girl infront of the macbook'
+
     });
 
     console.log('Response from Anisa:', response);
-})
+}, 180000)

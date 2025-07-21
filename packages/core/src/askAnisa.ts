@@ -82,13 +82,3 @@ export const askAnisa = async (
         };
     }
 };
-const testFunction = async () => {
-    const response = await askAnisa({
-        userId: 'example-user-id',
-        prompt: 'can you combine this two images.',
-    });
-
-    console.log('Response from Anisa:', response);
-};
-
-testFunction();
