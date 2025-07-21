@@ -1,14 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import supabase from "./client";
-
-
-export type Message = {
-  id?: string;
-  user_id: string;
-  content: string;
-  role: 'user' | 'assistant' | 'developer' | 'system';
-  created_at?: string;
-};
+import {Message} from "./types";
 
 export async function saveMessageToDatabase(
   userId: string,

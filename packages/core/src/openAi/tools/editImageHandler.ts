@@ -1,7 +1,29 @@
-import { client } from './client';
-import { uploadBase64Image } from '../supabase/actions';
-import { ResponseInputContent } from 'openai/resources/responses/responses';
-import {ResponseStructureOutput} from "./types";
+import {
+  FunctionTool,
+  ResponseInputContent,
+} from 'openai/resources/responses/responses';
+import { client } from '../client';
+import { uploadBase64Image } from '../../supabase/actions';
+import { ResponseStructureOutput } from '../types';
+
+export const edit_image_tool: FunctionTool = {
+  strict: false,
+  type: 'function',
+  name: 'edit_image',
+  description:
+    'Edit images based on a prompt. Call this when user wants to modify, edit, or change existing images.',
+  parameters: {
+    type: 'object',
+    properties: {
+      prompt: {
+        type: 'string',
+        description: 'The editing instruction for the image.',
+      },
+    },
+    additionalProperties: false,
+    required: ['prompt'],
+  },
+};
 
 async function downloadImageAsBase64(url: string): Promise<string> {
   const response = await fetch(url);
@@ -18,9 +40,10 @@ async function downloadImageAsBase64(url: string): Promise<string> {
   const contentType = response.headers.get('content-type') || 'image/jpeg';
   return `data:${contentType};base64,${base64}`;
 }
+
 export const generateImageFromUrls = async (
-    prompt: string,
-    imageUrls: string[]
+  prompt: string,
+  imageUrls: string[]
 ): Promise<ResponseStructureOutput> => {
   if (!prompt || prompt.trim() === '') {
     throw new Error('Prompt is required for image editing.');
@@ -56,11 +79,11 @@ export const generateImageFromUrls = async (
   });
 
   const imageData = response.output
-      .filter((output) => output.type === 'image_generation_call')
-      .map((output) => output.result);
+    .filter((output) => output.type === 'image_generation_call')
+    .map((output) => output.result);
 
   console.log(
-      `Image generation from URLs used ${response.usage?.total_tokens} tokens`
+    `Image generation from URLs used ${response.usage?.total_tokens} tokens`
   );
 
   if (imageData.length > 0) {

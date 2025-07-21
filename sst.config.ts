@@ -66,6 +66,7 @@ export default $config({
             handler: "packages/functions/src/response.handler",
             environment: getSharedEnv(),
             link: [mediaQueue],
+            timeout: "5 minutes",
         });
 
         const api = new sst.aws.ApiGatewayV2("WaWebhook");
@@ -78,6 +79,17 @@ export default $config({
         api.route("GET /", handler);
         api.route("POST /", handler);
 
+
+        new sst.aws.Function("ChatMessageHandler", {
+            handler: "packages/functions/src/chat.handler",
+            environment: getSharedEnv({
+                SQS_QUEUE_URL: messageQueue.url,
+                MEDIA_QUEUE_URL: mediaQueue.url,
+            }),
+            link: [messageQueue],
+            url: true,
+            timeout: "5 minutes",
+        })
 
     },
 });
