@@ -56,6 +56,7 @@ export default $config({
         mediaQueue.subscribe({
             handler: "packages/functions/src/media.handler",
             environment: getSharedEnv(),
+            timeout: "10 minutes",
         });
 
         const messageQueue = new sst.aws.Queue("MessageQueue", {
@@ -63,7 +64,7 @@ export default $config({
         })
         messageQueue.subscribe( {
             handler: "packages/functions/src/response.handler",
-            environment: getSharedEnv({SQS_QUEUE_URL: messageQueue.url}),
+            environment: getSharedEnv(),
             link: [mediaQueue],
         });
 
@@ -77,7 +78,5 @@ export default $config({
             },
             link: [messageQueue, secrets.webhookVerifyToken],
         });
-
-
     },
 });
