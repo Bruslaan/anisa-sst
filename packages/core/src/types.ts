@@ -7,6 +7,7 @@ export module Types {
 
   export type AnisaPayload = {
     id: string;
+    userId: string;
     text?: string | undefined;
     mediaUrl?: string[];
     type: 'audio' | 'image' | 'text';

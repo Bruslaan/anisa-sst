@@ -75,7 +75,8 @@ const processImageGeneration = async (message: Types.AnisaPayload): Promise<void
         console.log(
             `Generating image with prompt and ${message.mediaUrl.length} reference images`
         );
-        imageUrl = await OpenAi.generateImageFromUrls(message.text, message.mediaUrl);
+       const tmp = await OpenAi.generateImageFromUrls(message.text, message.mediaUrl);
+        imageUrl = tmp.image_url!;
     } else {
         console.log(`Generating image with text prompt only`);
         imageUrl = await OpenAi.generateImage(message.text);

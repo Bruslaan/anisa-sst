@@ -104,6 +104,7 @@ const handleWhatsAppMessage = async (
 
         const sqsPayload: AnisaPayload = {
             id: waMessage.id,
+            userId: waMessage.from,
             type: waMessage.type as 'audio' | 'image' | 'text',
             text: waMessage.text?.body,
             provider: 'whatsapp',

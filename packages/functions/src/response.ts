@@ -1,7 +1,8 @@
 import { SQSEvent, SQSRecord } from 'aws-lambda';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
-import {Types, ReplyService, OpenAi} from "@ANISA/core";
+import {Types, ReplyService, OpenAi, Anisa} from "@ANISA/core";
 import { Resource} from "sst";
+import askAnisaFn = Anisa.askAnisaFn;
 
 const SQS_QUEUE_URL = Resource.MediaQueue.url;
 const sqsClient = new SQSClient({
@@ -90,26 +91,13 @@ const handleTextMessage = async (
     }
 
     const startTime = Date.now();
-    const responseText = await OpenAi.generateAiResponse(
-        message.text,
-        async (toolName: string, functionArguments: Record<string, unknown>) => {
-            console.log(toolName, functionArguments);
-
-            message.text = functionArguments.prompt as string;
-            const sqsCommand = new SendMessageCommand({
-                QueueUrl: SQS_QUEUE_URL,
-                MessageBody: JSON.stringify(message),
-                MessageGroupId: sqsMessageId,
-                MessageDeduplicationId: sqsMessageId,
-            });
-
-            await sqsClient.send(sqsCommand);
-            console.log(
-                'WhatsApp message sent to SQS queue v1:',
-                JSON.stringify(message)
-            );
+    const responseText = await askAnisaFn(
+        {
+            userId: message.userId,
+            prompt: message.text,
+            imageUrl: message.mediaUrl?.[0]
         }
-    );
+    )
     const aiResponseTime = Date.now() - startTime;
     console.log(
         `AI response for ${message.id} (SQS ID: ${sqsMessageId}) generated in ${aiResponseTime}ms.`
@@ -117,8 +105,9 @@ const handleTextMessage = async (
 
     message.answer = {
         id: `ans-${message.id}-${Date.now()}`,
-        text: responseText,
-        type: 'text',
+        text: responseText.content ?? "",
+        type: responseText.type,
+        mediaUrl: responseText.image_url || undefined,
     };
 
     const replyStartTime = Date.now();
