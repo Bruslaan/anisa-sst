@@ -1,8 +1,9 @@
 import { SQSEvent, SQSRecord } from 'aws-lambda';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import {Types, ReplyService, OpenAi} from "@ANISA/core";
+import { Resource} from "sst";
 
-const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
+const SQS_QUEUE_URL = Resource.MediaQueue.url;
 const sqsClient = new SQSClient({
     region: process.env.AWS_REGION || 'eu-central-1',
 });
@@ -98,6 +99,8 @@ const handleTextMessage = async (
             const sqsCommand = new SendMessageCommand({
                 QueueUrl: SQS_QUEUE_URL,
                 MessageBody: JSON.stringify(message),
+                MessageGroupId: sqsMessageId,
+                MessageDeduplicationId: sqsMessageId,
             });
 
             await sqsClient.send(sqsCommand);
