@@ -7,10 +7,11 @@ import {
     downloadMediaToStream,
     streamToBase64,
     uploadBase64Image,
-    type WhatsappMessage, Types
+    type WhatsappMessage, Types, Whatsapp, getBusinessPhoneNumberId
 } from "@ANISA/core";
 import AnisaPayload = Types.AnisaPayload;
 import {Resource} from "sst";
+import markAsRead = Whatsapp.markAsRead;
 
 
 const SQS_QUEUE_URL = Resource.MessageQueue.url
@@ -113,7 +114,6 @@ const handleWhatsAppMessage = async (
             sqsPayload.mediaUrl = [mediaUrl];
         }
 
-        console.log("Payload ready", sqsPayload)
         const sqsCommand = new SendMessageCommand({
             QueueUrl: SQS_QUEUE_URL,
             MessageBody: JSON.stringify(sqsPayload),
@@ -123,9 +123,13 @@ const handleWhatsAppMessage = async (
 
         await sqsClient.send(sqsCommand);
         console.log(
-            'WhatsApp message sent to SQS queue v1:',
+            'WhatsApp message sent to SQS:',
             JSON.stringify(sqsPayload)
         );
+
+        const businessPhoneNumberId = getBusinessPhoneNumberId(parsedBody)
+
+        businessPhoneNumberId && await markAsRead(businessPhoneNumberId, waMessage.id);
 
         return {
             statusCode: 200,
