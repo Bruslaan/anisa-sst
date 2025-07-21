@@ -13,6 +13,11 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "ChatMessageHandler": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
+    }
     "GENERATION_QUALITY": {
       "type": "sst.sst.Secret"
       "value": string

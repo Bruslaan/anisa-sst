@@ -78,14 +78,17 @@ export default $config({
         api.route("GET /", handler);
         api.route("POST /", handler);
 
-        // Chat App API
-        const chatHandler = {
+
+        new sst.aws.Function("ChatMessageHandler", {
             handler: "packages/functions/src/chat.handler",
-            environment: getSharedEnv(),
-        };
-        api.route("GET /chat", chatHandler);
-        api.route("POST /chat/message", chatHandler);
-        api.route("OPTIONS /chat/message", chatHandler);
+            environment: getSharedEnv({
+                SQS_QUEUE_URL: messageQueue.url,
+                MEDIA_QUEUE_URL: mediaQueue.url,
+            }),
+            link: [messageQueue],
+            url: true,
+            timeout: "5 minutes",
+        })
 
     },
 });
