@@ -1,10 +1,9 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
 export default $config({
-    app(input) {
+    app(_input) {
         return {
             name: "anisa-ai",
-            removal: input?.stage === "production" ? "retain" : "remove",
             home: "aws",
             region: "us-east-1",
         };
@@ -40,6 +39,7 @@ export default $config({
 
         new sst.aws.Function("WhatsAppWebhook", {
             handler: "packages/functions/src/webhook.handler",
+            url: true,
             environment: {
                 OPENAI_API_KEY: openAiApiKey.value!,
                 SQS_QUEUE_URL: messageQueue.url,
@@ -47,9 +47,9 @@ export default $config({
                 SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey.value!,
                 SUPABASE_URL: supabaseUrl.value!,
                 GRAPH_API_TOKEN: graphApiToken.value!,
-                WEBHOOK_VERIFY_TOKEN: webhookVerifyToken.value!,
+                WEBHOOK_VERIFY_TOKEN: webhookVerifyToken.value,
             },
-            link: [messageQueue],
+            link: [messageQueue, webhookVerifyToken],
         });
 
         new sst.aws.Function("ResponseGenerator", {
@@ -103,12 +103,6 @@ export default $config({
             },
         });
 
-        const api = new sst.aws.ApiGatewayV2("WhatsAppApi", {
-            link: [messageQueue],
-        });
-
-        api.route("GET /", "packages/functions/src/webhook.handler");
-        api.route("POST /", "packages/functions/src/webhook.handler");
 
     },
 });

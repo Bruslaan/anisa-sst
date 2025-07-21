@@ -1,6 +1,6 @@
 
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type {APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResult} from 'aws-lambda';
 import {
   isAWhatsappMessage,
   extractWAMessage,
@@ -13,20 +13,24 @@ import {
 import AnisaPayload = Types.AnisaPayload;
 import { Resource } from "sst";
 
-const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'test';
+
 const SQS_QUEUE_URL = Resource.MessageQueue.url
+const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN;
 
 const sqsClient = new SQSClient({
   region: process.env.AWS_REGION || 'eu-central-1',
 });
 
 const handleWebhookVerification = (
-    event: APIGatewayProxyEvent
+    event: APIGatewayProxyEventV2
 ): APIGatewayProxyResult => {
   const { queryStringParameters } = event;
   const mode = queryStringParameters?.['hub.mode'];
   const token = queryStringParameters?.['hub.verify_token'];
   const challenge = queryStringParameters?.['hub.challenge'];
+
+  console.log('Webhook verification:',
+      `mode=${mode}, token=${token}, challenge=${challenge} webhook_verify_token=${WEBHOOK_VERIFY_TOKEN}`);
 
   if (mode === 'subscribe' && token === WEBHOOK_VERIFY_TOKEN) {
     return {
@@ -65,7 +69,7 @@ const processImageMedia = async (
 };
 
 const handleWhatsAppMessage = async (
-    event: APIGatewayProxyEvent
+    event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyResult> => {
   let parsedBody;
 
@@ -138,14 +142,15 @@ const handleWhatsAppMessage = async (
 };
 
 export const handler = async (
-    event: APIGatewayProxyEvent
+    event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyResult> => {
 
-  if (event.httpMethod === 'GET') {
+
+  if (event.requestContext.http.method === 'GET') {
     return handleWebhookVerification(event);
   }
 
-  if (event.httpMethod === 'POST') {
+  if (event.requestContext.http.method === 'POST') {
     return handleWhatsAppMessage(event);
   }
 
