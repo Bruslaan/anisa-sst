@@ -25,10 +25,6 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "MediaGenerator": {
-      "name": string
-      "type": "sst.aws.Function"
-    }
     "MediaQueue": {
       "type": "sst.aws.Queue"
       "url": string
@@ -56,10 +52,6 @@ declare module "sst" {
     "RESEND_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string
-    }
-    "ResponseGenerator": {
-      "name": string
-      "type": "sst.aws.Function"
     }
     "STRIPE_SECRET_KEY": {
       "type": "sst.sst.Secret"

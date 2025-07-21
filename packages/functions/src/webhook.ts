@@ -1,161 +1,162 @@
-
-import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
-import type {APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResult} from 'aws-lambda';
+import {SendMessageCommand, SQSClient} from '@aws-sdk/client-sqs';
+import type {APIGatewayProxyEventV2, APIGatewayProxyResult} from 'aws-lambda';
 import {
-  isAWhatsappMessage,
-  extractWAMessage,
-  getMediaURL,
-  downloadMediaToStream,
-  streamToBase64,
-  uploadBase64Image,
-  type WhatsappMessage, Types
+    isAWhatsappMessage,
+    extractWAMessage,
+    getMediaURL,
+    downloadMediaToStream,
+    streamToBase64,
+    uploadBase64Image,
+    type WhatsappMessage, Types
 } from "@ANISA/core";
 import AnisaPayload = Types.AnisaPayload;
-import { Resource } from "sst";
+import {Resource} from "sst";
 
 
 const SQS_QUEUE_URL = Resource.MessageQueue.url
 const WEBHOOK_VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN;
 
 const sqsClient = new SQSClient({
-  region: process.env.AWS_REGION || 'eu-central-1',
+    region: process.env.AWS_REGION || 'eu-central-1',
 });
 
 const handleWebhookVerification = (
     event: APIGatewayProxyEventV2
 ): APIGatewayProxyResult => {
-  const { queryStringParameters } = event;
-  const mode = queryStringParameters?.['hub.mode'];
-  const token = queryStringParameters?.['hub.verify_token'];
-  const challenge = queryStringParameters?.['hub.challenge'];
+    const {queryStringParameters} = event;
+    const mode = queryStringParameters?.['hub.mode'];
+    const token = queryStringParameters?.['hub.verify_token'];
+    const challenge = queryStringParameters?.['hub.challenge'];
 
-  console.log('Webhook verification:',
-      `mode=${mode}, token=${token}, challenge=${challenge} webhook_verify_token=${WEBHOOK_VERIFY_TOKEN}`);
+    console.log('Webhook verification:',
+        `mode=${mode}, token=${token}, challenge=${challenge} webhook_verify_token=${WEBHOOK_VERIFY_TOKEN}`);
 
-  if (mode === 'subscribe' && token === WEBHOOK_VERIFY_TOKEN) {
+    if (mode === 'subscribe' && token === WEBHOOK_VERIFY_TOKEN) {
+        return {
+            statusCode: 200,
+            body: challenge || '',
+        };
+    }
+
     return {
-      statusCode: 200,
-      body: challenge || '',
+        statusCode: 403,
+        body: 'Forbidden',
     };
-  }
-
-  return {
-    statusCode: 403,
-    body: 'Forbidden',
-  };
 };
 
 const processImageMedia = async (
     waMessage: WhatsappMessage
 ): Promise<string | undefined> => {
-  if (waMessage.type !== 'image' || !waMessage.image?.id) {
-    return undefined;
-  }
+    if (waMessage.type !== 'image' || !waMessage.image?.id) {
+        return undefined;
+    }
 
-  try {
-    const imageUrl = await getMediaURL(waMessage.image.id);
-    console.log('Image URL:', imageUrl);
+    try {
+        const imageUrl = await getMediaURL(waMessage.image.id);
+        console.log('Image URL:', imageUrl);
 
-    const base64Image = await downloadMediaToStream(imageUrl);
-    const stream = await streamToBase64(base64Image);
-    const { publicUrl } = await uploadBase64Image(stream as string, 'images');
+        const base64Image = await downloadMediaToStream(imageUrl);
+        const stream = await streamToBase64(base64Image);
+        const {publicUrl} = await uploadBase64Image(stream as string, 'images');
 
-    console.log('Media URL:', publicUrl);
-    return publicUrl;
-  } catch (error) {
-    console.error('Failed to process image media:', error);
-    throw error;
-  }
+        console.log('Media URL:', publicUrl);
+        return publicUrl;
+    } catch (error) {
+        console.error('Failed to process image media:', error);
+        throw error;
+    }
 };
 
 const handleWhatsAppMessage = async (
     event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyResult> => {
-  let parsedBody;
+    let parsedBody;
 
-  try {
-    parsedBody = JSON.parse(event.body || '{}');
-  } catch (error) {
-    console.error('Failed to parse request body:', error);
-    return {
-      statusCode: 400,
-      body: 'Invalid JSON format',
-    };
-  }
-
-  if (!isAWhatsappMessage(parsedBody)) {
-    console.error('Received invalid message format');
-    return {
-      statusCode: 400,
-      body: 'Invalid message format',
-    };
-  }
-
-  if (!SQS_QUEUE_URL) {
-    console.error('SQS_QUEUE_URL is not defined');
-    return {
-      statusCode: 500,
-      body: 'Internal Server Error: SQS_QUEUE_URL is not defined',
-    };
-  }
-
-  try {
-    const waMessage = extractWAMessage(parsedBody);
-
-    const sqsPayload: AnisaPayload = {
-      id: waMessage.id,
-      type: waMessage.type as 'audio' | 'image' | 'text',
-      text: waMessage.text?.body,
-      provider: 'whatsapp',
-      whatsapp: parsedBody,
-    };
-    const mediaUrl = await processImageMedia(waMessage);
-    if (mediaUrl) {
-      sqsPayload.mediaUrl = [mediaUrl];
+    try {
+        parsedBody = JSON.parse(event.body || '{}');
+    } catch (error) {
+        console.error('Failed to parse request body:', error);
+        return {
+            statusCode: 400,
+            body: 'Invalid JSON format',
+        };
     }
 
-    const sqsCommand = new SendMessageCommand({
-      QueueUrl: SQS_QUEUE_URL,
-      MessageBody: JSON.stringify(sqsPayload),
-    });
+    if (!isAWhatsappMessage(parsedBody)) {
+        console.error('Received invalid message format');
+        return {
+            statusCode: 400,
+            body: 'Invalid message format',
+        };
+    }
 
-    await sqsClient.send(sqsCommand);
-    console.log(
-        'WhatsApp message sent to SQS queue v1:',
-        JSON.stringify(sqsPayload)
-    );
+    if (!SQS_QUEUE_URL) {
+        console.error('SQS_QUEUE_URL is not defined');
+        return {
+            statusCode: 500,
+            body: 'Internal Server Error: SQS_QUEUE_URL is not defined',
+        };
+    }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: 'Message processed successfully',
-        timestamp: new Date().toISOString(),
-      }),
-    };
-  } catch (error) {
-    console.error('Failed to process WhatsApp message:', error);
-    return {
-      statusCode: 500,
-      body: 'Internal Server Error',
-    };
-  }
+    try {
+        const waMessage = extractWAMessage(parsedBody);
+
+        const sqsPayload: AnisaPayload = {
+            id: waMessage.id,
+            type: waMessage.type as 'audio' | 'image' | 'text',
+            text: waMessage.text?.body,
+            provider: 'whatsapp',
+            whatsapp: parsedBody,
+        };
+        const mediaUrl = await processImageMedia(waMessage);
+        if (mediaUrl) {
+            sqsPayload.mediaUrl = [mediaUrl];
+        }
+
+        console.log("Payload ready", sqsPayload)
+        const sqsCommand = new SendMessageCommand({
+            QueueUrl: SQS_QUEUE_URL,
+            MessageBody: JSON.stringify(sqsPayload),
+            MessageGroupId: waMessage.id,
+            MessageDeduplicationId: waMessage.id,
+        });
+
+        await sqsClient.send(sqsCommand);
+        console.log(
+            'WhatsApp message sent to SQS queue v1:',
+            JSON.stringify(sqsPayload)
+        );
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({
+                message: 'Message processed successfully',
+                timestamp: new Date().toISOString(),
+            }),
+        };
+    } catch (error) {
+        console.error('Failed to process WhatsApp message:', error);
+        return {
+            statusCode: 500,
+            body: 'Internal Server Error',
+        };
+    }
 };
 
 export const handler = async (
     event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyResult> => {
 
+    if (event.requestContext.http.method === 'GET') {
+        return handleWebhookVerification(event);
+    }
 
-  if (event.requestContext.http.method === 'GET') {
-    return handleWebhookVerification(event);
-  }
+    if (event.requestContext.http.method === 'POST') {
+        return handleWhatsAppMessage(event);
+    }
 
-  if (event.requestContext.http.method === 'POST') {
-    return handleWhatsAppMessage(event);
-  }
-
-  return {
-    statusCode: 405,
-    body: 'Method Not Allowed',
-  };
+    return {
+        statusCode: 405,
+        body: 'Method Not Allowed',
+    };
 };
