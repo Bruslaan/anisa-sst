@@ -57,26 +57,40 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
                 try {
                     const uploadResult = await uploadBase64Image(image);
                     imageUrl = uploadResult.publicUrl;
+                    console.log('Image uploaded successfully:', uploadResult.publicUrl);
                 } catch (error) {
                     console.error('Image upload failed:', error);
                     return createResponse(500, {error: 'Failed to upload image'});
                 }
             }
 
-            // Call askAnisa function
-            const response = await askAnisaFn({
-                userId,
-                prompt: message,
-                imageUrl
-            });
+            // Call askAnisa function with extended timeout handling
+            console.log('Calling askAnisa for user:', userId, 'with message:', message ? 'text' : 'image only');
+            const startTime = Date.now();
+            
+            try {
+                const response = await askAnisaFn({
+                    userId,
+                    prompt: message,
+                    imageUrl
+                });
+                
+                const processingTime = Date.now() - startTime;
+                console.log(`askAnisa completed in ${processingTime}ms`);
 
-            return createResponse(200, {
-                response: response.content,
-                image_url: response.image_url,
-                type: response.type,
-                tokens: response.total_tokens,
-                cost: response.cost
-            });
+                return createResponse(200, {
+                    response: response.content,
+                    image_url: response.image_url,
+                    type: response.type,
+                    tokens: response.total_tokens,
+                    cost: response.cost,
+                    processing_time_ms: processingTime
+                });
+            } catch (error) {
+                const processingTime = Date.now() - startTime;
+                console.error(`askAnisa failed after ${processingTime}ms:`, error);
+                throw error;
+            }
         }
 
         return createResponse(404, {error: 'Not found'});
@@ -278,6 +292,21 @@ const getChatHTML = () => `
             border-radius: 6px;
             font-size: 14px;
         }
+        
+        .message-stats {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+            font-family: monospace;
+        }
+        
+        .processing-time {
+            color: #059669;
+        }
+        
+        .token-info {
+            color: #dc2626;
+        }
     </style>
 </head>
 <body>
@@ -345,7 +374,7 @@ const getChatHTML = () => `
         });
         
         // Add message to chat
-        function addMessage(content, role, imageUrl = null) {
+        function addMessage(content, role, imageUrl = null, stats = null) {
             const messageDiv = document.createElement('div');
             messageDiv.className = \`message \${role}\`;
             
@@ -361,6 +390,26 @@ const getChatHTML = () => `
                 img.className = 'message-image';
                 img.alt = 'Uploaded image';
                 messageDiv.appendChild(img);
+            }
+            
+            // Add stats for assistant messages
+            if (role === 'assistant' && stats) {
+                const statsDiv = document.createElement('div');
+                statsDiv.className = 'message-stats';
+                
+                let statsText = '';
+                if (stats.tokens) {
+                    statsText += \`🔤 \${stats.tokens} tokens\`;
+                }
+                if (stats.cost) {
+                    statsText += statsText ? \` • 💰 $\${stats.cost.toFixed(4)}\` : \`💰 $\${stats.cost.toFixed(4)}\`;
+                }
+                if (stats.processing_time_ms) {
+                    statsText += statsText ? \` • ⏱️ \${(stats.processing_time_ms/1000).toFixed(1)}s\` : \`⏱️ \${(stats.processing_time_ms/1000).toFixed(1)}s\`;
+                }
+                
+                statsDiv.textContent = statsText;
+                messageDiv.appendChild(statsDiv);
             }
             
             chatMessages.appendChild(messageDiv);
@@ -411,6 +460,10 @@ const getChatHTML = () => `
             setTyping(true);
             
             try {
+                // Create AbortController for longer timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+                
                 const response = await fetch('/chat/message', {
                     method: 'POST',
                     headers: {
@@ -420,20 +473,33 @@ const getChatHTML = () => `
                         userId,
                         message: message || undefined,
                         image: selectedImage || undefined
-                    })
+                    }),
+                    signal: controller.signal
                 });
                 
+                clearTimeout(timeoutId);
                 const data = await response.json();
                 
+                console.log("Response data:", data);
+                
                 if (response.ok) {
-                    // Add assistant response
-                    addMessage(data.response, 'assistant', data.image_url);
+                    // Add assistant response with stats
+                    const stats = {
+                        tokens: data.tokens,
+                        cost: data.cost,
+                        processing_time_ms: data.processing_time_ms
+                    };
+                    addMessage(data.response, 'assistant', data.image_url, stats);
                 } else {
-                    addMessage(\`Error: \${data.error}\`, 'assistant');
+                    addMessage(\`Error: \${data.error || 'Unknown error'}\`, 'assistant');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                addMessage('Sorry, something went wrong. Please try again.', 'assistant');
+                if (error.name === 'AbortError') {
+                    addMessage('Request timed out. The operation took too long. Please try again.', 'assistant');
+                } else {
+                    addMessage('Sorry, something went wrong. Please try again.', 'assistant');
+                }
             } finally {
                 // Hide typing indicator
                 setTyping(false);

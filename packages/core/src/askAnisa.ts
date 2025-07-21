@@ -72,6 +72,8 @@ export const askAnisa = async (
         );
         await saveMessageToDatabase(userId, assistantMessage);
 
+        console.log("Anisa response:", aiResponse);
+
         return aiResponse;
     } catch (error) {
         console.error('Error in askAnisa:', error);
