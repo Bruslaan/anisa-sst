@@ -72,7 +72,8 @@ export default $config({
 
         const handler = {
             handler: "packages/functions/src/webhook.handler",
-            environment: getSharedEnv({SQS_QUEUE_URL: messageQueue.url})
+            environment: getSharedEnv({SQS_QUEUE_URL: messageQueue.url}),
+            link: [messageQueue],
         };
         api.route("GET /", handler);
         api.route("POST /", handler);
