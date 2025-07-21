@@ -1,107 +1,40 @@
 import { SQSEvent, SQSRecord } from 'aws-lambda';
-import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
-import {Types, ReplyService, OpenAi, Anisa} from "@ANISA/core";
-import { Resource} from "sst";
-import askAnisaFn = Anisa.askAnisaFn;
+import {Types, ReplyService, Anisa} from "@ANISA/core";
 
-const SQS_QUEUE_URL = Resource.MediaQueue.url;
-const sqsClient = new SQSClient({
-    region: process.env.AWS_REGION || 'eu-central-1',
-});
-
-export const handler = async (
-    event: SQSEvent
-): Promise<{ batchItemFailures: Types.BatchItemFailure[] }> => {
-    console.log(
-        `Attempting to process ${event.Records.length} messages concurrently.`
-    );
-
-    // Store the whole batch into this array
-    const processingPromises = event.Records.map((sqsMessage) =>
-        processMessage(sqsMessage)
-    );
-
-    // handle all messages concurrently
-    const results = await Promise.allSettled(processingPromises);
-
-    // failed messages will be sent back to SQS
-    const failedMessageIdentifiers: string[] = [];
-
-    results.forEach((result, index) => {
-        const record = event.Records[index];
-        if (result.status === 'rejected') {
-            console.error(
-                `Failed to process message ${record?.messageId}. Reason:`,
-                result.reason
-            );
-            failedMessageIdentifiers.push(record?.messageId!);
-        }
-    });
-
-    if (failedMessageIdentifiers.length > 0) {
-        console.log(
-            `${failedMessageIdentifiers.length} of ${event.Records.length} messages failed processing and will be retried.`
-        );
-    } else if (event.Records.length > 0) {
-        console.log(
-            `All ${event.Records.length} messages in the batch processed successfully.`
-        );
-    } else {
-        console.log('No messages in the batch to process.');
-    }
+export const handler = async (event: SQSEvent): Promise<{ batchItemFailures: Types.BatchItemFailure[] }> => {
+    const results = await Promise.allSettled(event.Records.map(processMessage));
+    
+    const failedMessageIdentifiers = results
+        .map((result, index) => result.status === 'rejected' ? event.Records[index]?.messageId : null)
+        .filter((id): id is string => id !== null);
 
     return {
-        batchItemFailures: failedMessageIdentifiers.map((id) => ({
-            itemIdentifier: id,
-        })),
+        batchItemFailures: failedMessageIdentifiers.map(id => ({ itemIdentifier: id }))
     };
 };
 
 const processMessage = async (record: SQSRecord): Promise<void> => {
-    const anisaPayloadMessage = Types.parseAnisaPayload(record.body);
-
-    console.log(
-        `Processing ${anisaPayloadMessage.provider} ${anisaPayloadMessage.type} message: ${anisaPayloadMessage.id} (SQS ID: ${record.messageId})`
-    );
-
-    switch (anisaPayloadMessage.type) {
+    const message = Types.parseAnisaPayload(record.body);
+    
+    switch (message.type) {
         case 'text':
-            await handleTextMessage(anisaPayloadMessage, record.messageId);
-            break;
+            return handleTextMessage(message);
         case 'audio':
-            await handleAudioMessage(anisaPayloadMessage);
-            break;
         case 'image':
-            await handleImageMessage(anisaPayloadMessage);
-            break;
+            throw new Error(`${message.type} processing not implemented yet`);
         default:
-            throw new Error(`Unsupported message type: ${anisaPayloadMessage.type}`);
+            throw new Error(`Unsupported message type: ${message.type}`);
     }
 };
 
-const handleTextMessage = async (
-    message: Types.AnisaPayload,
-    sqsMessageId: string
-) => {
-    if (!message.text?.trim()) {
-        console.warn(
-            `Text message ${message.id} (SQS ID: ${sqsMessageId}) is empty or whitespace-only. Skipping AI response.`
-        );
-        return;
-    }
+const handleTextMessage = async (message: Types.AnisaPayload) => {
+    if (!message.text?.trim()) return;
 
-    const startTime = Date.now();
-    const responseText = await askAnisaFn(
-        {
-            userId: message.userId,
-            prompt: message.text,
-            imageUrl: message.mediaUrl?.[0]
-        }
-    )
-    const aiResponseTime = Date.now() - startTime;
-    console.log(
-        `AI response for ${message.id} (SQS ID: ${sqsMessageId}) generated in ${aiResponseTime}ms.`
-    );
+    const responseText = await Anisa.askAnisaFn({
+        userId: message.userId,
+        prompt: message.text,
+        imageUrl: message.mediaUrl?.[0]
+    });
 
     message.answer = {
         id: `ans-${message.id}-${Date.now()}`,
@@ -110,39 +43,5 @@ const handleTextMessage = async (
         mediaUrl: responseText.image_url || undefined,
     };
 
-    const replyStartTime = Date.now();
     await ReplyService.replyToProvider(message);
-    const replyTime = Date.now() - replyStartTime;
-    console.log(
-        `Replied to provider for ${message.id} (SQS ID: ${sqsMessageId}) in ${replyTime}ms.`
-    );
-    console.log(
-        `Text message ${message.id} (SQS ID: ${sqsMessageId}) processed successfully. Total time for handler: ${Date.now() - startTime}ms`
-    );
-};
-
-const handleAudioMessage = async (message: Types.AnisaPayload) => {
-    if (!message.mediaUrl) {
-        throw new Error(`Audio message ${message.id} missing media URL`);
-    }
-    console.warn(
-        `Audio processing for message ${message.id} not implemented yet.`
-    );
-    // TODO: Implement audio processing
-    throw new Error(
-        `Audio processing for message ${message.id} not implemented yet`
-    );
-};
-
-const handleImageMessage = async (message: Types.AnisaPayload) => {
-    if (!message.mediaUrl) {
-        throw new Error(`Image message ${message.id} missing media URL`);
-    }
-    console.warn(
-        `Image processing for message ${message.id} not implemented yet.`
-    );
-    // TODO: Implement image processing
-    throw new Error(
-        `Image processing for message ${message.id} not implemented yet`
-    );
 };
