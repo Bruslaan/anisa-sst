@@ -65,6 +65,9 @@ export default $config({
             handler: "packages/functions/src/response.handler",
             environment: getSharedEnv(),
             timeout: "5 minutes",
+            nodejs: {
+                install: ["sharp"]
+            }
         });
 
         const api = new sst.aws.ApiGatewayV2("WaWebhook");
@@ -73,6 +76,9 @@ export default $config({
             handler: "packages/functions/src/webhook.handler",
             environment: getSharedEnv(),
             link: [messageQueue],
+            nodejs: {
+                install: ["sharp"]
+            }
         };
         api.route("GET /", handler);
         api.route("POST /", handler);
@@ -85,6 +91,9 @@ export default $config({
             link: [messageQueue],
             url: true,
             timeout: "5 minutes",
+            nodejs: {
+                install: ["sharp"]
+            }
         });
     },
 });
