@@ -30,6 +30,7 @@ export default $config({
         };
 
         const getSharedEnv = (overrides?: any) => ({
+            WEBHOOK_VERIFY_TOKEN: secrets.webhookVerifyToken.value!,
             OPENAI_API_KEY: secrets.openAiApiKey.value!,
             OPENAI_PROJECT_ID: secrets.openAiProjectId.value!,
             OPENAI_ORGANIZATION_ID: secrets.openAiOrganizationId.value!,

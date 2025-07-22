@@ -495,7 +495,7 @@ const getChatHTML = () => `
         <div class="chat-header">
             <div class="header-avatar">🤖</div>
             <div class="header-info">
-                <h3>Anisa AI</h3>
+                <h3>Anisa AI v1</h3>
                 <p>Online - AI Assistant</p>
             </div>
         </div>
