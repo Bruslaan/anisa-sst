@@ -26,7 +26,6 @@ export module Types {
   ): AnisaPayload => {
     try {
       let message: AnisaPayload;
-      console.log('Parsing message body:', body);
       if (typeof body === 'string') {
         message = JSON.parse(body);
       } else if (typeof body === 'object' && body !== null) {
