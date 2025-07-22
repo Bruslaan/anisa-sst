@@ -30,10 +30,6 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "MediaQueue": {
-      "type": "sst.aws.Queue"
-      "url": string
-    }
     "MessageQueue": {
       "type": "sst.aws.Queue"
       "url": string
