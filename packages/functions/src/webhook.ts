@@ -28,11 +28,6 @@ const handleWebhookVerification = (
         params?.["hub.mode"] === "subscribe" &&
         params?.["hub.verify_token"] === WEBHOOK_VERIFY_TOKEN;
 
-    Logger.info("Webhook verification request", {
-        mode: params?.["hub.mode"],
-        tokenValid: params?.["hub.verify_token"] === WEBHOOK_VERIFY_TOKEN,
-        result: isValid ? "success" : "forbidden",
-    });
 
     return isValid
         ? {statusCode: 200, body: params?.["hub.challenge"] || ""}
@@ -95,10 +90,6 @@ const handleWhatsAppMessage = async (
         const parsedBody = JSON.parse(event.body || "{}");
 
         if (!isAWhatsappMessage(parsedBody) || !Resource.MessageQueue.url) {
-            Logger.info("Skipping non-WhatsApp message or missing SQS URL", {
-                isWhatsappMessage: isAWhatsappMessage(parsedBody),
-                hasSqsUrl: !!Resource.MessageQueue.url,
-            });
             return {
                 statusCode: 200,
                 body: "",

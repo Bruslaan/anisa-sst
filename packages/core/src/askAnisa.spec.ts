@@ -10,5 +10,4 @@ test("askAnisa", async () => {
 
     });
 
-    console.log('Response from Anisa:', response);
 }, 180000)

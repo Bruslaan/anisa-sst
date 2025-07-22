@@ -48,7 +48,6 @@ export const generateResponse = async (
 
   if (response?.output?.[0]?.type === "function_call") {
     const functionCall = response.output[0];
-    console.log(`Function call detected: ${functionCall.name}`, functionCall.arguments);
 
     if (process.env.DEBUG) {
       return {

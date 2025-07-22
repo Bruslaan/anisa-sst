@@ -31,16 +31,13 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
 
     // Handle CORS preflight
     if (method === 'OPTIONS') {
-        Logger.info('CORS preflight request', { method, path });
         return createResponse(200, '');
     }
 
-    Logger.info('Chat handler request', { method, path });
 
     try {
         // Serve the chat interface
         if (method === 'GET' && path === '/chat') {
-            Logger.info('Serving chat HTML interface');
             return createResponse(200, getChatHTML(), 'text/html');
         }
 
@@ -138,7 +135,6 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
             }
         }
 
-        Logger.info('Endpoint not found', { method, path });
         return createResponse(404, {error: 'Not found'});
 
     } catch (error) {
@@ -612,30 +608,21 @@ const getChatHTML = () => `
         
         // Handle file selection
         fileInput.addEventListener('change', (e) => {
-            console.log('File input change event fired');
             const file = e.target.files[0];
-            console.log('Selected file:', file);
             
             if (file && file.type.startsWith('image/')) {
-                console.log('Valid image file:', file.name, 'type:', file.type);
                 const reader = new FileReader();
                 reader.onload = (readerEvent) => {
                     selectedImage = readerEvent.target.result;
-                    console.log('FileReader loaded, selectedImage length:', selectedImage ? selectedImage.length : 'null');
                     
                     // Update button to show image preview
                     fileButton.classList.add('has-image');
                     fileButton.style.backgroundImage = \`url(\${selectedImage})\`;
                     fileButton.querySelector('span').style.display = 'none';
                     
-                    console.log('Image preview updated, selectedImage set to:', selectedImage ? 'data loaded' : 'null');
-                };
-                reader.onerror = (err) => {
-                    console.error('FileReader error:', err);
                 };
                 reader.readAsDataURL(file);
             } else {
-                console.log('No file selected or invalid file type');
             }
         });
         
@@ -712,7 +699,6 @@ const getChatHTML = () => `
             const message = messageInput.value.trim();
             const userId = userIdInput.value.trim();
             
-            console.log('sendMessage called, selectedImage:', selectedImage ? 'has data' : 'null/undefined', 'length:', selectedImage ? selectedImage.length : 'N/A');
             
             if (!userId) {
                 alert('Please enter a user ID');
@@ -720,7 +706,6 @@ const getChatHTML = () => `
             }
             
             if (!message && !selectedImage) {
-                console.log('No message and no image, returning');
                 return;
             }
             
@@ -754,12 +739,6 @@ const getChatHTML = () => `
                     image: selectedImage || undefined
                 };
                 
-                console.log('Sending request:', {
-                    userId,
-                    message: message || 'no message',
-                    hasImage: !!selectedImage,
-                    imageLength: selectedImage ? selectedImage.length : 0
-                });
                 
                 const response = await fetch('/chat/message', {
                     method: 'POST',
@@ -773,7 +752,6 @@ const getChatHTML = () => `
                 clearTimeout(timeoutId);
                 const data = await response.json();
                 
-                console.log("Response data:", data);
                 
                 if (response.ok) {
                     // Add assistant response with stats
@@ -787,7 +765,6 @@ const getChatHTML = () => `
                     addMessage(\`Error: \${data.error || 'Unknown error'}\`, 'assistant');
                 }
             } catch (error) {
-                console.error('Error:', error);
                 if (error.name === 'AbortError') {
                     addMessage('Request timed out. The operation took too long. Please try again.', 'assistant');
                 } else {

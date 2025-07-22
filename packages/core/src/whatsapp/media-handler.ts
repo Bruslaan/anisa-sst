@@ -87,7 +87,6 @@ export const readFromFile = (filePath: string) => {
 export const deleteFile = (filePath: string) => {
   fs.unlink(filePath, (err) => {
     if (err) {
-      console.error("Error deleting file", filePath, err);
     }
   });
 };
@@ -139,15 +138,9 @@ export async function processImageForVisionAPI(
 
     // Convert back to base64 with data URI
     const finalBase64 = processedBuffer.toString("base64");
-    console.log(
-      "Processed image size:",
-      Math.round(finalBase64.length / 1024),
-      "KB"
-    );
 
     return `data:image/webp;base64,${finalBase64}`;
   } catch (error) {
-    console.error("Error processing image:", error);
     throw error;
   }
 }
@@ -169,7 +162,6 @@ export async function downloadAndDeleteAudio<T>(
 
     return callbackreturn;
   } catch (error) {
-    console.error("Error downloading and transcribing audio:", error);
     throw error;
   }
 }

@@ -55,11 +55,9 @@ export namespace Types {
         );
       }
 
-      console.log("Parsed message is:", message);
 
       return message;
     } catch (error: unknown) {
-      console.error("Error parsing message body:", body, error);
       if (error instanceof Error) {
         throw new Error(`Invalid message format: ${error.message}`);
       }

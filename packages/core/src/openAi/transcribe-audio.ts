@@ -17,7 +17,6 @@ export async function transcribeAudio(filePath: string): Promise<string> {
 
     return transcription.text;
   } catch (error) {
-    console.error("Error transcribing audio:", error);
     throw error;
   }
 }

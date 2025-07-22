@@ -53,7 +53,6 @@ export async function uploadBase64Image(
       publicUrl,
     };
   } catch (error) {
-    console.error('Error uploading image:', error);
     throw error;
   }
 }
@@ -87,7 +86,6 @@ export async function saveMessagesToDatabase(
     .select();
 
   if (error) {
-    console.error('Error creating messages', error);
     throw error;
   }
   return data;

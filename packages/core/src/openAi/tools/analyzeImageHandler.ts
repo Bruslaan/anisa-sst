@@ -63,8 +63,6 @@ export const analyzeImageHandler = async (
     ],
   });
 
-  console.log(response.output_text);
-  console.log('Price2:', calculateCostText(response?.usage));
 
   return {
     type: 'text',

@@ -4,9 +4,6 @@ import { Types, ReplyService, Anisa, Logger, Whatsapp } from "@ANISA/core";
 export const handler = async (
   event: SQSEvent
 ): Promise<{ batchItemFailures: Types.BatchItemFailure[] }> => {
-  Logger.info("Response handler started", {
-    batchSize: event.Records.length,
-  });
 
   const results = await Promise.allSettled(event.Records.map(processMessage));
 
@@ -16,12 +13,6 @@ export const handler = async (
     )
     .filter((id): id is string => id !== null);
 
-  Logger.info("Response handler completed", {
-    batchSize: event.Records.length,
-    successCount: results.length - failedMessageIdentifiers.length,
-    failureCount: failedMessageIdentifiers.length,
-    failedIds: failedMessageIdentifiers,
-  });
 
   return {
     batchItemFailures: failedMessageIdentifiers.map((id) => ({
@@ -34,7 +25,6 @@ const processMessage = async (record: SQSRecord): Promise<void> => {
 
   if (true){
 
-    console.log("Early return")
     return
   }
 

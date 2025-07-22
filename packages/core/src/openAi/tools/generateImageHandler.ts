@@ -40,9 +40,6 @@ export const generateImageHandler = async (
   const image_base64 = response?.data?.[0]?.b64_json;
   const { publicUrl } = await uploadBase64Image(image_base64!, 'images');
 
-  console.log(
-    `AI response generated with ${response.usage?.total_tokens} tokens`
-  );
   return {
     type: 'image',
     image_url: publicUrl,

@@ -82,9 +82,6 @@ export const generateImageFromUrls = async (
     .filter((output) => output.type === 'image_generation_call')
     .map((output) => output.result);
 
-  console.log(
-    `Image generation from URLs used ${response.usage?.total_tokens} tokens`
-  );
 
   if (imageData.length > 0) {
     const imageBase64 = imageData[0];

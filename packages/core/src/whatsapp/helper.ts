@@ -9,14 +9,12 @@ export const isAWhatsappMessage = (
     unknownObject: unknown
 ): unknownObject is WhatsappMessagePayload => {
     if (!unknownObject || typeof unknownObject !== 'object') {
-        console.error('unknownObject is not an object');
         return false;
     }
 
     const msg = unknownObject as WhatsappMessagePayload;
 
     if (!msg) {
-        console.error('msg is undefined or null');
         return false;
     }
     const entry = msg?.entry?.[0];
@@ -24,7 +22,6 @@ export const isAWhatsappMessage = (
         statuses?: Array<{ status: string }>;
     };
     if (changes?.statuses) {
-        console.debug("wa status", changes.statuses[0].status);
         return false; // This will make the handler return early with 200
     }
 

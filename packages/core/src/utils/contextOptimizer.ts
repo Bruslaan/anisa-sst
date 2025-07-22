@@ -79,7 +79,6 @@ export const buildContextualHistory = (
     ? `Context includes ${imageCount} recent image(s) for reference and editing.`
     : "Text-only conversation context.";
 
-  console.log("message history", JSON.stringify(messageHistory));
   return {
     messageHistory,
     imageUrls,
