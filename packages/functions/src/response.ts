@@ -104,9 +104,14 @@ const handleTextMessage = async (message: Types.AnisaPayload, logger: ReturnType
         cost: responseText.cost
     });
 
+    // Append token and cost info to response text
+    const costInfo = responseText.total_tokens && responseText.cost 
+        ? `\n\n_📊 ${responseText.total_tokens} tokens • $${responseText.cost.toFixed(4)}_`
+        : '';
+
     message.answer = {
         id: `ans-${message.id}-${Date.now()}`,
-        text: responseText.content ?? "",
+        text: (responseText.content ?? "") + costInfo,
         type: responseText.type,
         mediaUrl: responseText.image_url || undefined,
     };
