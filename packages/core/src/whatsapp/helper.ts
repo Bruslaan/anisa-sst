@@ -4,6 +4,7 @@ import FormData from 'form-data';
 
 const GRAPH_API_TOKEN = process.env.GRAPH_API_TOKEN;
 
+const WA_API_VERSION = 'v23.0'; // Update this to the latest version if needed
 export const isAWhatsappMessage = (
   unknownObject: unknown
 ): unknownObject is WhatsappMessagePayload => {
@@ -93,7 +94,7 @@ const markAsRead = async (
 ) => {
   return axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${business_phone_number_id}/messages`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },
@@ -116,7 +117,7 @@ const reply = async ({
 }) => {
   return axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v21.0/${from_business_phone_number_id}/messages`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${from_business_phone_number_id}/messages`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },
@@ -146,7 +147,7 @@ const uploadMedia = async (
 
   const response = await axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/media`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${business_phone_number_id}/media`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
       ...formData.getHeaders(),
@@ -165,7 +166,7 @@ const sendImage = async (
 ) => {
   return axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${business_phone_number_id}/messages`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },
@@ -188,7 +189,7 @@ const sendAudio = async (
 ) => {
   return axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v22.0/${business_phone_number_id}/messages`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${business_phone_number_id}/messages`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
       'Content-Type': 'application/json',
@@ -210,7 +211,7 @@ const sendMessage = async (
 ) => {
   return axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${business_phone_number_id}/messages`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },
@@ -233,7 +234,7 @@ const replyWithCallToAction = async (
 ) => {
   return axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${business_phone_number_id}/messages`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },
@@ -279,7 +280,7 @@ const replyWithCallToAction2 = async (
 ) => {
   const replyWithCallToActionResponse = await axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${business_phone_number_id}/messages`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },
@@ -323,7 +324,7 @@ const sendInteractiveButtons = async (
 ) => {
   return axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${business_phone_number_id}/messages`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },
@@ -375,7 +376,7 @@ const sendListMessage = async (
 ) => {
   return axios({
     method: 'POST',
-    url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
+    url: `https://graph.facebook.com/${WA_API_VERSION}/${business_phone_number_id}/messages`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },

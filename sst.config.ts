@@ -46,7 +46,7 @@ export default $config({
             IDEMPOTENCE_KEY: secrets.idempotenceKey.value!,
             API_TOKEN: secrets.apiToken.value!,
             GENERATION_QUALITY: secrets.generationQuality.value!,
-            GRAPH_API_TOKEN: secrets.graphApiToken.value!,
+            GRAPH_API_TOKEN: "EAANkZAStxEvQBPCqSkDExtqH3ZAiPsHV46NNGfjCnqJdgZCtxq7kIPQLSH25iRQs5GL8OEsZCjyDtWtNib9UvGM0QZAeMNGt3urrFA1BxyHOUur1MP0ZAM129q9uz03D4GRKrd6YpxnG3u2YDF1upK47gtTRCghJna3PcSlKtodZBBGVVrWsTp2ZC1o4T7LzE6uUzhAZCAj37pd1oNb6rdjse8LEQbFHFZBc7YtPkMElwiZCpanZCamhRyTwaZA3l0wrgcZC0ZD",
             ENVIRONMENT: process.env.ENVIRONMENT || "development",
             ...overrides,
         });

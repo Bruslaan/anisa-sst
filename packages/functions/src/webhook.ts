@@ -28,7 +28,7 @@ const processImageMedia = async (waMessage: WhatsappMessage): Promise<string | u
     const base64Image = await downloadMediaToStream(imageUrl);
     const stream = await streamToBase64(base64Image);
     const {publicUrl} = await uploadBase64Image(stream as string, 'images');
-    
+
     return publicUrl;
 };
 
@@ -40,14 +40,14 @@ const handleWhatsAppMessage = async (
         
         if (!isAWhatsappMessage(parsedBody) || !Resource.MessageQueue.url) {
             return {
-                statusCode: !isAWhatsappMessage(parsedBody) ? 400 : 500,
+                statusCode: !isAWhatsappMessage(parsedBody) ? 200 : 200,
                 body: !isAWhatsappMessage(parsedBody) ? 'Invalid message format' : 'Internal Server Error',
             };
         }
 
         const waMessage = extractWAMessage(parsedBody);
         const mediaUrl = await processImageMedia(waMessage);
-        
+
         const sqsPayload: Types.AnisaPayload = {
             id: waMessage.id,
             userId: waMessage.from,
@@ -78,7 +78,7 @@ const handleWhatsAppMessage = async (
     } catch (error) {
         console.error('Failed to process WhatsApp message:', error);
         return {
-            statusCode: event.body ? 500 : 400,
+            statusCode: event.body ? 200 : 200,
             body: event.body ? 'Internal Server Error' : 'Invalid JSON format',
         };
     }
@@ -87,6 +87,6 @@ const handleWhatsAppMessage = async (
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResult> => {
     const method = event.requestContext.http.method;
     return method === 'GET' ? handleWebhookVerification(event)
-         : method === 'POST' ? await handleWhatsAppMessage(event)
-         : {statusCode: 405, body: 'Method Not Allowed'};
+        : method === 'POST' ? await handleWhatsAppMessage(event)
+            : {statusCode: 200, body: 'Method Not Allowed'};
 };
