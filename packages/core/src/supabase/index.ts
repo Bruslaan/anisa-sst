@@ -1,4 +1,4 @@
-import supabase from './client';
+import supabase from "./client";
 import {
   saveMessageToDatabase as SaveMessageToDatabase,
   uploadBase64Image as UploadBase64Image,
@@ -6,12 +6,11 @@ import {
   saveMessagesToDatabase as SaveMessagesToDatabase,
   getMessageHistory as GetMessageHistory,
   getLastImageUrls as GetLastImageUrls,
-} from './actions';
+} from "./actions";
 
-import  { Message as IMessage } from './types';
+import { Message as IMessage } from "./types";
 
-
-export module Supabase {
+export namespace Supabase {
   export const client = supabase;
   export type Message = IMessage;
   export const saveMessageToDatabase = SaveMessageToDatabase;

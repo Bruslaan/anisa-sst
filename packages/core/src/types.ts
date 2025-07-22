@@ -1,6 +1,6 @@
-import { WhatsappMessagePayload } from '@ANISA/core/whatsapp/wa-types';
+import { WhatsappMessagePayload } from "@ANISA/core/whatsapp/wa-types";
 
-export module Types {
+export namespace Types {
   export interface BatchItemFailure {
     itemIdentifier: string;
   }
@@ -10,14 +10,14 @@ export module Types {
     userId: string;
     text?: string | undefined;
     mediaUrl?: string[];
-    type: 'audio' | 'image' | 'text';
-    provider: 'whatsapp' | 'telegram';
+    type: "audio" | "image" | "text";
+    provider: "whatsapp" | "telegram";
     whatsapp?: WhatsappMessagePayload;
     answer?: {
       id: string;
       text: string;
       mediaUrl?: string;
-      type: 'audio' | 'image' | 'text';
+      type: "audio" | "image" | "text";
     };
   };
 
@@ -26,40 +26,44 @@ export module Types {
   ): AnisaPayload => {
     try {
       let message: AnisaPayload;
-      if (typeof body === 'string') {
+      if (typeof body === "string") {
         message = JSON.parse(body);
-      } else if (typeof body === 'object' && body !== null) {
+      } else if (typeof body === "object" && body !== null) {
         message = body as AnisaPayload;
       } else {
-        throw new Error('Message body is not a string or a valid object.');
+        throw new Error("Message body is not a string or a valid object.");
       }
 
       if (!message.id || !message.type || !message.provider) {
-        throw new Error('Missing required fields: id, type, or provider');
+        throw new Error("Missing required fields: id, type, or provider");
       }
 
-      const validTypes = ['audio', 'image', 'text'];
+      const validTypes = ["audio", "image", "text"];
       if (!validTypes.includes(message.type)) {
         throw new Error(
-          `Invalid message type: ${message.type}. Must be one of ${validTypes.join(', ')}`
+          `Invalid message type: ${
+            message.type
+          }. Must be one of ${validTypes.join(", ")}`
         );
       }
-      const validProviders = ['whatsapp', 'telegram'];
+      const validProviders = ["whatsapp", "telegram"];
       if (!validProviders.includes(message.provider)) {
         throw new Error(
-          `Invalid message provider: ${message.provider}. Must be one of ${validProviders.join(', ')}`
+          `Invalid message provider: ${
+            message.provider
+          }. Must be one of ${validProviders.join(", ")}`
         );
       }
 
-      console.log('Parsed message is:', message);
+      console.log("Parsed message is:", message);
 
       return message;
     } catch (error: unknown) {
-      console.error('Error parsing message body:', body, error);
+      console.error("Error parsing message body:", body, error);
       if (error instanceof Error) {
         throw new Error(`Invalid message format: ${error.message}`);
       }
-      throw new Error('Invalid message format due to an unknown error.');
+      throw new Error("Invalid message format due to an unknown error.");
     }
   };
 }

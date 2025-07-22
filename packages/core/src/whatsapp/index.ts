@@ -1,4 +1,4 @@
-import { WhatsappMessage, WhatsappMessagePayload } from './wa-types';
+import { WhatsappMessage, WhatsappMessagePayload } from "./wa-types";
 import {
   isAWhatsappMessage as IsAWhatsappMessage,
   getBusinessPhoneNumberId as GetBusinessPhoneNumberId,
@@ -16,12 +16,12 @@ import {
   sendAudio as SendAudio,
   sendInteractiveButtons as SendInteractiveButtons,
   sendListMessage as SendListMessage,
-} from './helper';
+} from "./helper";
 
-export module Whatsapp {
+export namespace Whatsapp {
   export type WaMessage = WhatsappMessage;
   export type MessagePayload = WhatsappMessagePayload;
-  
+
   export const isWAMessage = IsAWhatsappMessage;
   export const getBusinessPhoneNumberId = GetBusinessPhoneNumberId;
   export const extractWaMessage = ExtractWAMessage;
