@@ -49,7 +49,7 @@ export default $config({
       API_TOKEN: secrets.apiToken.value!,
       GENERATION_QUALITY: secrets.generationQuality.value!,
       GRAPH_API_TOKEN:
-        "EAANkZAStxEvQBPCqSkDExtqH3ZAiPsHV46NNGfjCnqJdgZCtxq7kIPQLSH25iRQs5GL8OEsZCjyDtWtNib9UvGM0QZAeMNGt3urrFA1BxyHOUur1MP0ZAM129q9uz03D4GRKrd6YpxnG3u2YDF1upK47gtTRCghJna3PcSlKtodZBBGVVrWsTp2ZC1o4T7LzE6uUzhAZCAj37pd1oNb6rdjse8LEQbFHFZBc7YtPkMElwiZCpanZCamhRyTwaZA3l0wrgcZC0ZD",
+        "EAANkZAStxEvQBPEvrxPa9Mv0vgzAZB4TGNthzvKQeUd2WVF5ApuBPg6HsmopmMZCf7eW68UHCBlia6w3140V3Ncn7UDtLKie3ejzo3PZBCuY1jZB1y5Bg3sRRgGyYZCMoZAtBnerb2TknBNlw7UljvmswYTENhYMYgRzoEKd6LnW9NZBaxMhU0FxX8jyEL0imUPDBkOQjVwb5yVENIcY7OBZAHZBHEV5NAOFMesAgZATQLGiwsjnNpB2UkFZC0MWaze0TAZDZD",
       ENVIRONMENT: process.env.ENVIRONMENT || "development",
       ...overrides,
     });
@@ -67,10 +67,7 @@ export default $config({
 
     const handler = {
       handler: "packages/functions/src/webhook.handler",
-      environment: {
-        SQS_QUEUE_URL: messageQueue.url,
-        WEBHOOK_VERIFY_TOKEN: secrets.webhookVerifyToken.value!,
-      },
+      environment: getSharedEnv(),
       link: [messageQueue],
     };
     api.route("GET /", handler);

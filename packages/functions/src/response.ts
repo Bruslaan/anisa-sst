@@ -31,6 +31,13 @@ export const handler = async (
 };
 
 const processMessage = async (record: SQSRecord): Promise<void> => {
+
+  if (true){
+
+    console.log("Early return")
+    return
+  }
+
   const message = Types.parseAnisaPayload(record.body);
   const traceId = message.userId;
 
@@ -147,17 +154,11 @@ const handleTextMessage = async (
   message: Types.AnisaPayload,
   logger: ReturnType<typeof Logger.createContextLogger>
 ) => {
-  if (!message.text?.trim()) {
-    logger.info("Skipping empty text message", {
-      step: "skip_empty",
-    });
-    return;
-  }
 
   logger.info("Processing text message", {
     step: "ai_request_start",
     hasImage: !!message.mediaUrl,
-    textLength: message.text.length,
+    textLength: message?.text?.length,
   });
 
   const startTime = Date.now();

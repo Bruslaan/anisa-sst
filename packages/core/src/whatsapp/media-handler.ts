@@ -37,7 +37,7 @@ export const getMediaURL = async (mediaID: string) => {
     data: { url },
   } = await axios({
     method: "GET",
-    url: `https://graph.facebook.com/v21.0/${mediaID}/`,
+    url: `https://graph.facebook.com/v23.0/${mediaID}/`,
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },
