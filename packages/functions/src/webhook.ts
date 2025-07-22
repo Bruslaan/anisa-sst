@@ -65,6 +65,8 @@ const handleWhatsAppMessage = async (
             MessageDeduplicationId: waMessage.id,
         }));
 
+        console.info("Message send to SQS", JSON.stringify(sqsPayload));
+
         const businessPhoneNumberId = getBusinessPhoneNumberId(parsedBody);
         businessPhoneNumberId && await Whatsapp.markAsRead(businessPhoneNumberId, waMessage.id);
 
