@@ -1,152 +1,117 @@
-import { SQSEvent, SQSRecord } from "aws-lambda";
-import { Types, ReplyService, Anisa, Logger, Whatsapp } from "@ANISA/core";
+import {SQSEvent, SQSRecord} from "aws-lambda";
+import {Types, ReplyService, Anisa, Whatsapp} from "@ANISA/core";
 
 export const handler = async (
-  event: SQSEvent
+    event: SQSEvent
 ): Promise<{ batchItemFailures: Types.BatchItemFailure[] }> => {
 
-  const results = await Promise.allSettled(event.Records.map(processMessage));
+    console.info("Received SQS events:", event.Records.length);
+    const results = await Promise.allSettled(event.Records.map(processMessage));
 
-  const failedMessageIdentifiers = results
-    .map((result, index) =>
-      result.status === "rejected" ? event.Records[index]?.messageId : null
-    )
-    .filter((id): id is string => id !== null);
+    const failedMessageIdentifiers = results
+        .map((result, index) =>
+            result.status === "rejected" ? event.Records[index]?.messageId : null
+        )
+        .filter((id): id is string => id !== null);
 
 
-  return {
-    batchItemFailures: failedMessageIdentifiers.map((id) => ({
-      itemIdentifier: id,
-    })),
-  };
+    console.info("Failed messages send back to the que. amount:", failedMessageIdentifiers.length);
+
+    return {
+        batchItemFailures: failedMessageIdentifiers.map((id) => ({
+            itemIdentifier: id,
+        })),
+    };
 };
 
 const processMessage = async (record: SQSRecord): Promise<void> => {
 
-  if (true){
+    const message = Types.parseAnisaPayload(record.body);
 
-    return
-  }
+    console.info("processMessage called with:", message);
+    try {
+        switch (message.type) {
+            case "text":
+                await handleTextMessage(message);
+                break;
+            case "audio":
+                await handleAudioMessage(message);
+                break;
+            case "image":
+                await handleTextMessage(message);
+                break;
+            default:
 
-  const message = Types.parseAnisaPayload(record.body);
-  const traceId = message.userId;
+                throw new Error(`Unsupported message type: ${message.type}`);
+        }
 
-  const logger = Logger.createContextLogger({
-    traceId,
-    userId: message.userId,
-    messageId: message.id,
-    messageType: message.type,
-    sqsMessageId: record.messageId,
-  });
-
-
-  try {
-    switch (message.type) {
-      case "text":
-        await handleTextMessage(message, logger);
-        break;
-      case "audio":
-        await handleAudioMessage(message, logger);
-        break;
-      case "image":
-        await handleTextMessage(message, logger);
-        break;
-      default:
-
-        throw new Error(`Unsupported message type: ${message.type}`);
+    } catch (error) {
+        console.error("processMessage errored with:", error);
+        throw error;
     }
-
-
-  } catch (error) {
-    logger.error(
-      "Failed to process SQS message",
-      {
-        step: "error",
-      },
-      error as Error
-    );
-    throw error;
-  }
 };
 
 const handleAudioMessage = async (
-  message: Types.AnisaPayload,
-  logger: ReturnType<typeof Logger.createContextLogger>
+    message: Types.AnisaPayload,
 ) => {
-  if (!message.mediaUrl) {
-    logger.error("Audio message missing mediaId", {
-      step: "error",
-    });
-    throw new Error("Audio message missing mediaId");
-  }
+    if (!message.mediaUrl) {
+        throw new Error("Audio message missing mediaId");
+    }
 
+    console.info("handleAudioMessage called");
 
-  try {
-    const transcribedText = await Whatsapp.downloadAndDeleteAudio(
-      message.mediaUrl,
-      async (audioFilePath: string) => {
+    try {
+        const transcribedText = await Whatsapp.downloadAndDeleteAudio(
+            message.mediaUrl,
+            async (audioFilePath: string) => {
+                const transcription = await Anisa.transcribeAudio(audioFilePath);
+                return transcription;
+            }
+        );
 
+        console.info("Transcription result:", transcribedText);
 
-        const transcription = await Anisa.transcribeAudio(audioFilePath);
+        const textMessage: Types.AnisaPayload = {
+            ...message,
+            type: "text",
+            text: transcribedText,
+        };
 
-
-
-        return transcription;
-      }
-    );
-
-    // Create a new message with the transcribed text and pass it to handleTextMessage
-    const textMessage: Types.AnisaPayload = {
-      ...message,
-      type: "text",
-      text: transcribedText,
-    };
-
-
-
-    await handleTextMessage(textMessage, logger);
-  } catch (error) {
-    logger.error(
-      "Failed to process audio message",
-      {
-        step: "error",
-      },
-      error as Error
-    );
-    throw error;
-  }
+        await handleTextMessage(textMessage);
+    } catch (error) {
+        console.error("handleAudioMessage errored with:", error);
+        throw error;
+    }
 };
 
 const handleTextMessage = async (
-  message: Types.AnisaPayload,
-  logger: ReturnType<typeof Logger.createContextLogger>
+    message: Types.AnisaPayload,
 ) => {
 
+    const responseText = await Anisa.askAnisaFn({
+        userId: message.userId,
+        prompt: message.text,
+        imageUrl: message.mediaUrl,
+    });
+
+    console.log("Ai response:", responseText);
 
 
-  const startTime = Date.now();
-  const responseText = await Anisa.askAnisaFn({
-    userId: message.userId,
-    prompt: message.text,
-    imageUrl: message.mediaUrl,
-  });
-  const aiProcessingTime = Date.now() - startTime;
+    const costInfo =
+        responseText.total_tokens && responseText.cost
+            ? `\n\n_📊 ${
+                responseText.total_tokens
+            } tokens • $${responseText.cost.toFixed(4)}_`
+            : "";
+
+    message.answer = {
+        id: `ans-${message.id}-${Date.now()}`,
+        text: (responseText.content ?? "") + costInfo,
+        type: responseText.type,
+        mediaUrl: responseText.image_url || undefined,
+    };
 
 
-  const costInfo =
-    responseText.total_tokens && responseText.cost
-      ? `\n\n_📊 ${
-          responseText.total_tokens
-        } tokens • $${responseText.cost.toFixed(4)}_`
-      : "";
-
-  message.answer = {
-    id: `ans-${message.id}-${Date.now()}`,
-    text: (responseText.content ?? "") + costInfo,
-    type: responseText.type,
-    mediaUrl: responseText.image_url || undefined,
-  };
-
-
-  await ReplyService.replyToProvider(message);
+    await ReplyService.replyToProvider(message);
+    console.info("Reply to provider", message);
 };

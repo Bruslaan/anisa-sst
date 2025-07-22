@@ -11,7 +11,6 @@ import {
     Types,
     Whatsapp,
     getBusinessPhoneNumberId,
-    Logger,
 } from "@ANISA/core";
 import {Resource} from "sst";
 
@@ -36,28 +35,17 @@ const handleWebhookVerification = (
 
 const processImageMedia = async (
     waMessage: WhatsappMessage,
-    logger: ReturnType<typeof Logger.createContextLogger>
 ): Promise<string | undefined> => {
+    console.info("Processing image media for message:", waMessage.id);
     if (waMessage.type !== "image" || !waMessage.image?.id) return undefined;
-
-
-
     try {
         const imageUrl = await getMediaURL(waMessage.image.id);
-
-
         const base64Image = await downloadMediaToStream(imageUrl);
-
-
         const stream = await streamToBase64(base64Image);
-
-
         const {publicUrl} = await uploadBase64Image(stream as string, "images");
-
-
         return publicUrl;
     } catch (error) {
-
+        console.error("Failed to process image media:", error);
         throw error;
     }
 };
@@ -65,8 +53,6 @@ const processImageMedia = async (
 const handleWhatsAppMessage = async (
     event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyResult> => {
-    let logger: ReturnType<typeof Logger.createContextLogger> | undefined;
-
     try {
         const parsedBody = JSON.parse(event.body || "{}");
 
@@ -78,19 +64,11 @@ const handleWhatsAppMessage = async (
         }
 
         const waMessage = extractWAMessage(parsedBody);
-        const traceId = waMessage.from;
-
-        logger = Logger.createContextLogger({
-            traceId,
-            userId: waMessage.from,
-            messageId: waMessage.id,
-            messageType: waMessage.type,
-        });
-
+        console.info("Received WhatsApp message:", waMessage);
 
         const mediaUrl =
             waMessage.type === "image"
-                ? await processImageMedia(waMessage, logger)
+                ? await processImageMedia(waMessage)
                 : waMessage.type === "audio"
                     ? waMessage.audio?.id
                     : undefined;
@@ -99,12 +77,11 @@ const handleWhatsAppMessage = async (
             id: waMessage.id,
             userId: waMessage.from,
             type: waMessage.type as "audio" | "image" | "text",
-            text: waMessage.text?.body,
+            text: waMessage.type === "image" ? waMessage.image?.caption : waMessage.text?.body,
             provider: "whatsapp",
             whatsapp: parsedBody,
             ...(mediaUrl && {mediaUrl}),
         };
-
 
         await sqsClient.send(
             new SendMessageCommand({
@@ -115,14 +92,14 @@ const handleWhatsAppMessage = async (
             })
         );
 
+        console.info("WhatsApp message sent to SQS");
 
         const businessPhoneNumberId = getBusinessPhoneNumberId(parsedBody);
         if (businessPhoneNumberId) {
-
             await Whatsapp.markAsRead(businessPhoneNumberId, waMessage.id);
-
         }
 
+        console.info("WhatsApp message marked as read");
 
         return {
             statusCode: 200,
@@ -132,7 +109,7 @@ const handleWhatsAppMessage = async (
             }),
         };
     } catch (error) {
-
+        console.error("failed to handle wa message in webhook", error);
         return {
             statusCode: 200,
             body: "",

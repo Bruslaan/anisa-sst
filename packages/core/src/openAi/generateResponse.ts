@@ -49,7 +49,8 @@ export const generateResponse = async (
   if (response?.output?.[0]?.type === "function_call") {
     const functionCall = response.output[0];
 
-    if (process.env.DEBUG) {
+    if (process.env.ANISA_DEBUG === "true") {
+      console.log("DEBUG mode: Function call skipped", functionCall.name, functionCall.arguments);
       return {
         type: "text",
         content: `DEBUG mode: Skipped function call ${functionCall.name}`,
