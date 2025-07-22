@@ -64,6 +64,7 @@ const handleAudioMessage = async (
         const transcribedText = await Whatsapp.downloadAndDeleteAudio(
             message.mediaUrl,
             async (audioFilePath: string) => {
+                console.info("Audio file path", audioFilePath);
                 const transcription = await Anisa.transcribeAudio(audioFilePath);
                 return transcription;
             }
@@ -75,6 +76,7 @@ const handleAudioMessage = async (
             ...message,
             type: "text",
             text: transcribedText,
+            mediaUrl: undefined, // Clear mediaUrl as it's not needed for text messages
         };
 
         await handleTextMessage(textMessage);

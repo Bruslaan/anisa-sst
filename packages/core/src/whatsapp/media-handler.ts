@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Readable } from "openai/_shims/node-types.mjs";
+import {Readable} from "openai/_shims/node-types.mjs";
 import fs from "fs";
 import sharp from "sharp";
 
@@ -8,160 +8,175 @@ const MIN_DIMENSION = 250;
 const GRAPH_API_TOKEN = process.env.GRAPH_API_TOKEN;
 
 export const getTests = async (url: string) => {
-  const mediastream = await axios({
-    method: "GET",
-    url: url,
-    headers: {
-      Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-    },
-  });
+    const mediastream = await axios({
+        method: "GET",
+        url: url,
+        headers: {
+            Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+        },
+    });
 
-  return mediastream.data;
+    return mediastream.data;
 };
 
 export const downloadMediaToStream = async (url: string) => {
-  const mediastream = await axios({
-    method: "GET",
-    url: url,
-    headers: {
-      Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-    },
-    responseType: "stream",
-  });
+    const mediastream = await axios({
+        method: "GET",
+        url: url,
+        headers: {
+            Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+        },
+        responseType: "stream",
+    });
 
-  return mediastream.data;
+    return mediastream.data;
 };
 
 export const getMediaURL = async (mediaID: string) => {
-  const {
-    data: { url },
-  } = await axios({
-    method: "GET",
-    url: `https://graph.facebook.com/v23.0/${mediaID}/`,
-    headers: {
-      Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-    },
-  });
+    const {
+        data: {url},
+    } = await axios({
+        method: "GET",
+        url: `https://graph.facebook.com/v23.0/${mediaID}/`,
+        headers: {
+            Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+        },
+    });
 
-  return url;
+    return url;
 };
 
 export const downloadImageToBase64 = async (imageURL: string) => {
-  const downloadedStream = await downloadMediaToStream(imageURL);
-  const base64Image = await streamToBase64(downloadedStream);
-  const optimizedImage = await processImageForVisionAPI(base64Image as string);
+    const downloadedStream = await downloadMediaToStream(imageURL);
+    const base64Image = await streamToBase64(downloadedStream);
+    const optimizedImage = await processImageForVisionAPI(base64Image as string);
 
-  return optimizedImage;
+    return optimizedImage;
 };
 
 export const streamToBase64 = (stream: Readable) => {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    stream.on("data", (chunk) => chunks.push(chunk));
-    stream.on("end", () => {
-      const buffer = Buffer.concat(chunks);
-      const base64String = buffer.toString("base64");
-      resolve(`data:image/jpeg;base64,${base64String}`);
+    return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        stream.on("data", (chunk) => chunks.push(chunk));
+        stream.on("end", () => {
+            const buffer = Buffer.concat(chunks);
+            const base64String = buffer.toString("base64");
+            resolve(`data:image/jpeg;base64,${base64String}`);
+        });
+        stream.on("error", (error) => reject(error));
     });
-    stream.on("error", (error) => reject(error));
-  });
 };
 
 export const saveStreamToDisk = (
-  stream: Readable,
-  filePath: string
+    stream: Readable,
+    filePath: string
 ): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    const writeStream = fs.createWriteStream(filePath);
-    stream.pipe(writeStream);
-    writeStream.on("finish", resolve);
-    writeStream.on("error", reject);
-  });
+    return new Promise((resolve, reject) => {
+        const writeStream = fs.createWriteStream(filePath);
+        stream.pipe(writeStream);
+        writeStream.on("finish", resolve);
+        writeStream.on("error", reject);
+    });
 };
 
 export const readFromFile = (filePath: string) => {
-  const readStream = fs.createReadStream(filePath);
-  return readStream;
+    const readStream = fs.createReadStream(filePath);
+    return readStream;
 };
 
 export const deleteFile = (filePath: string) => {
-  fs.unlink(filePath, (err) => {
-    if (err) {
-    }
-  });
+    fs.unlink(filePath, (err) => {
+        if (err) {
+        }
+    });
 };
 
 export async function processImageForVisionAPI(
-  base64String: string
+    base64String: string
 ): Promise<string> {
-  try {
-    // Remove data URI prefix if present
-    const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
-    const imageBuffer = Buffer.from(base64Data, "base64");
+    try {
+        // Remove data URI prefix if present
+        const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
+        const imageBuffer = Buffer.from(base64Data, "base64");
 
-    // Get original image metadata
-    const metadata = await sharp(imageBuffer).metadata();
-    const originalWidth = metadata.width || MAX_DIMENSION;
-    const originalHeight = metadata.height || MAX_DIMENSION;
+        // Get original image metadata
+        const metadata = await sharp(imageBuffer).metadata();
+        const originalWidth = metadata.width || MAX_DIMENSION;
+        const originalHeight = metadata.height || MAX_DIMENSION;
 
-    // Calculate scale factor to maintain aspect ratio
-    // Use the larger dimension to determine scale factor
-    const largerDimension = Math.max(originalWidth, originalHeight);
-    const scaleFactor = Math.min(
-      MAX_DIMENSION / largerDimension,
-      1 // Don't upscale if image is smaller than MAX_DIMENSION
-    );
+        // Calculate scale factor to maintain aspect ratio
+        // Use the larger dimension to determine scale factor
+        const largerDimension = Math.max(originalWidth, originalHeight);
+        const scaleFactor = Math.min(
+            MAX_DIMENSION / largerDimension,
+            1 // Don't upscale if image is smaller than MAX_DIMENSION
+        );
 
-    const newWidth = Math.max(
-      MIN_DIMENSION,
-      Math.round(originalWidth * scaleFactor)
-    );
-    const newHeight = Math.max(
-      MIN_DIMENSION,
-      Math.round(originalHeight * scaleFactor)
-    );
+        const newWidth = Math.max(
+            MIN_DIMENSION,
+            Math.round(originalWidth * scaleFactor)
+        );
+        const newHeight = Math.max(
+            MIN_DIMENSION,
+            Math.round(originalHeight * scaleFactor)
+        );
 
-    // Process image with aggressive optimization
-    const processedBuffer = await sharp(imageBuffer)
-      .resize(newWidth, newHeight, {
-        fit: "inside",
-        withoutEnlargement: true,
-        kernel: "lanczos3", // Better quality downscaling
-      })
-      .webp({
-        quality: 80, // Reduced quality for smaller file size
-        effort: 3, // Maximum compression effort
-        preset: "text", // Optimized for photos
-        smartSubsample: true, // Better chroma subsampling
-      })
-      .toBuffer();
+        // Process image with aggressive optimization
+        const processedBuffer = await sharp(imageBuffer)
+            .resize(newWidth, newHeight, {
+                fit: "inside",
+                withoutEnlargement: true,
+                kernel: "lanczos3", // Better quality downscaling
+            })
+            .webp({
+                quality: 80, // Reduced quality for smaller file size
+                effort: 3, // Maximum compression effort
+                preset: "text", // Optimized for photos
+                smartSubsample: true, // Better chroma subsampling
+            })
+            .toBuffer();
 
-    // Convert back to base64 with data URI
-    const finalBase64 = processedBuffer.toString("base64");
+        // Convert back to base64 with data URI
+        const finalBase64 = processedBuffer.toString("base64");
 
-    return `data:image/webp;base64,${finalBase64}`;
-  } catch (error) {
-    throw error;
-  }
+        return `data:image/webp;base64,${finalBase64}`;
+    } catch (error) {
+        throw error;
+    }
 }
 
 export async function downloadAndDeleteAudio<T>(
-  mediaId: string,
-  processCallback: (audioFilePath: string) => Promise<T>
+    mediaId: string,
+    processCallback: (audioFilePath: string) => Promise<T>
 ): Promise<T> {
-  try {
-    const url = await getMediaURL(mediaId);
-    const mediaStream = await downloadMediaToStream(url);
-    const audioFilePath = "/tmp/" + mediaId + ".ogg";
+    const audioFilePath = `/tmp/${mediaId}.ogg`;
 
-    await saveStreamToDisk(mediaStream, audioFilePath);
+    try {
+        const url = await getMediaURL(mediaId);
+        const mediaStream = await downloadMediaToStream(url);
+        await saveStreamToDisk(mediaStream, audioFilePath);
 
-    const callbackreturn = await processCallback(audioFilePath);
+        if (!fs.existsSync(audioFilePath)) {
+            console.error("audio file does not exist");
+            throw new Error(`Audio file was not saved correctly: ${audioFilePath}`);
+        }
 
-    deleteFile(audioFilePath);
+        const callbackreturn = await processCallback(audioFilePath);
 
-    return callbackreturn;
-  } catch (error) {
-    throw error;
-  }
+        if (fs.existsSync(audioFilePath)) {
+            fs.unlinkSync(audioFilePath);
+        }
+
+        return callbackreturn;
+    } catch (error) {
+        if (fs.existsSync(audioFilePath)) {
+            try {
+                fs.unlinkSync(audioFilePath);
+            } catch (cleanupError) {
+                console.error("Cleanup error:", cleanupError);
+            }
+        }
+        console.error("Error downloading or processing audio:", error);
+        throw error;
+    }
 }

@@ -52,7 +52,7 @@ export default $config({
             API_TOKEN: secrets.apiToken.value!,
             GENERATION_QUALITY: secrets.generationQuality.value!,
             GRAPH_API_TOKEN:
-                "EAANkZAStxEvQBPEvrxPa9Mv0vgzAZB4TGNthzvKQeUd2WVF5ApuBPg6HsmopmMZCf7eW68UHCBlia6w3140V3Ncn7UDtLKie3ejzo3PZBCuY1jZB1y5Bg3sRRgGyYZCMoZAtBnerb2TknBNlw7UljvmswYTENhYMYgRzoEKd6LnW9NZBaxMhU0FxX8jyEL0imUPDBkOQjVwb5yVENIcY7OBZAHZBHEV5NAOFMesAgZATQLGiwsjnNpB2UkFZC0MWaze0TAZDZD",
+                "EAANkZAStxEvQBPBgAKYPYSF8preS0m1PFeHEPsl6jaZAtFVMGwMNodZBj5W4GlkNY2chWMXlQtYCZAaWlzEgZBehyKfUiPvqL5jCetLlneu5mblxQhRi3YdgguZCw5PSIKm6pehT8Lds079lsHsaavxxjWWVckpl5B9IUxlBAmF3NRAWNojvZA34uMXZAAFmSjOPh6kAjM8aUjpliojBrulDqAToq84I75oyev9awCKAuZAkMGFFlJZAAtXIiXvVCrVwZDZD",
             ENVIRONMENT: process.env.ENVIRONMENT || "development",
             ANISA_DEBUG: "true",
             ...overrides,
