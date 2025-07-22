@@ -1,5 +1,5 @@
 import type {APIGatewayProxyEventV2, APIGatewayProxyResult} from 'aws-lambda';
-import {Anisa} from "@ANISA/core";
+import {Anisa, Logger} from "@ANISA/core";
 import {Supabase} from "@ANISA/core";
 import askAnisaFn = Anisa.askAnisaFn;
 import uploadBase64Image = Supabase.uploadBase64Image;
@@ -31,12 +31,16 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
 
     // Handle CORS preflight
     if (method === 'OPTIONS') {
+        Logger.info('CORS preflight request', { method, path });
         return createResponse(200, '');
     }
+
+    Logger.info('Chat handler request', { method, path });
 
     try {
         // Serve the chat interface
         if (method === 'GET' && path === '/chat') {
+            Logger.info('Serving chat HTML interface');
             return createResponse(200, getChatHTML(), 'text/html');
         }
 
@@ -45,9 +49,22 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
             const body = JSON.parse(event.body || '{}');
             const {userId, message, image} = body;
 
-            console.log("Ruslan", userId, message, image);
+            const logger = Logger.createContextLogger({
+                traceId: userId,
+                userId,
+                endpoint: '/chat/message',
+                hasMessage: !!message,
+                hasImage: !!image
+            });
+
+            logger.info('Chat message request received', {
+                step: 'start',
+                messageLength: message?.length || 0,
+                hasImage: !!image
+            });
 
             if (!userId) {
+                logger.warn('Request missing userId', { step: 'validation_error' });
                 return createResponse(400, {error: 'userId is required'});
             }
 
@@ -55,19 +72,33 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
 
             // Handle image upload if provided
             if (image && image.startsWith('data:image/')) {
-                console.log('Uploading image for user:', userId);
+                logger.info('Processing image upload', { 
+                    step: 'image_upload_start',
+                    imageSize: image.length 
+                });
+                
                 try {
                     const uploadResult = await uploadBase64Image(image);
                     imageUrl = uploadResult.publicUrl;
-                    console.log('Image uploaded successfully:', uploadResult.publicUrl);
+                    logger.info('Image uploaded successfully', { 
+                        step: 'image_uploaded',
+                        publicUrl: uploadResult.publicUrl 
+                    });
                 } catch (error) {
-                    console.error('Image upload failed:', error);
+                    logger.error('Image upload failed', { 
+                        step: 'image_upload_error' 
+                    }, error as Error);
                     return createResponse(500, {error: 'Failed to upload image'});
                 }
             }
 
             // Call askAnisa function with extended timeout handling
-            console.log('Calling askAnisa for user:', userId, 'with message:', message ? 'text' : 'image only');
+            logger.info('Calling AI service', { 
+                step: 'ai_request_start',
+                hasText: !!message,
+                hasImageUrl: !!imageUrl 
+            });
+            
             const startTime = Date.now();
             
             try {
@@ -78,7 +109,16 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
                 });
                 
                 const processingTime = Date.now() - startTime;
-                console.log(`askAnisa completed in ${processingTime}ms`);
+                
+                logger.info('AI response received', { 
+                    step: 'ai_response_received',
+                    processingTimeMs: processingTime,
+                    responseType: response.type,
+                    responseLength: response.content?.length || 0,
+                    totalTokens: response.total_tokens,
+                    cost: response.cost,
+                    hasImageUrl: !!response.image_url
+                });
 
                 return createResponse(200, {
                     response: response.content,
@@ -90,15 +130,19 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
                 });
             } catch (error) {
                 const processingTime = Date.now() - startTime;
-                console.error(`askAnisa failed after ${processingTime}ms:`, error);
+                logger.error('AI service failed', { 
+                    step: 'ai_error',
+                    processingTimeMs: processingTime 
+                }, error as Error);
                 throw error;
             }
         }
 
+        Logger.info('Endpoint not found', { method, path });
         return createResponse(404, {error: 'Not found'});
 
     } catch (error) {
-        console.error('Chat handler error:', error);
+        Logger.error('Chat handler error', { method, path }, error as Error);
         return createResponse(500, {
             error: 'Internal server error',
             message: error instanceof Error ? error.message : String(error)

@@ -5,6 +5,7 @@ export * from "./supabase/actions";
 export { default as supabaseClient } from "./supabase/client";
 export * from "./types";
 export * from "./reply-service";
+export * from "./utils/logger";
 
 // Namespace modules (deprecated - use named exports above)
 export { Whatsapp } from "./whatsapp";
