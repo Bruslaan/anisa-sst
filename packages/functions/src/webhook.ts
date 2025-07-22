@@ -40,8 +40,8 @@ const handleWhatsAppMessage = async (
         
         if (!isAWhatsappMessage(parsedBody) || !Resource.MessageQueue.url) {
             return {
-                statusCode: !isAWhatsappMessage(parsedBody) ? 200 : 200,
-                body: !isAWhatsappMessage(parsedBody) ? 'Invalid message format' : 'Internal Server Error',
+                statusCode: 200,
+                body: "",
             };
         }
 
@@ -78,8 +78,8 @@ const handleWhatsAppMessage = async (
     } catch (error) {
         console.error('Failed to process WhatsApp message:', error);
         return {
-            statusCode: event.body ? 200 : 200,
-            body: event.body ? 'Internal Server Error' : 'Invalid JSON format',
+            statusCode: 200,
+            body: "",
         };
     }
 };
