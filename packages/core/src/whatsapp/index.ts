@@ -17,6 +17,14 @@ import {
   sendInteractiveButtons as SendInteractiveButtons,
   sendListMessage as SendListMessage,
 } from "./helper";
+import {
+  downloadAndDeleteAudio as DownloadAndDeleteAudio,
+  downloadImageToBase64 as DownloadImageToBase64,
+  saveStreamToDisk as SaveStreamToDisk,
+  readFromFile as ReadFromFile,
+  deleteFile as DeleteFile,
+  processImageForVisionAPI as ProcessImageForVisionAPI,
+} from "./media-handler";
 
 export namespace Whatsapp {
   export type WaMessage = WhatsappMessage;
@@ -38,4 +46,10 @@ export namespace Whatsapp {
   export const sendAudio = SendAudio;
   export const sendInteractiveButtons = SendInteractiveButtons;
   export const sendListMessage = SendListMessage;
+  export const downloadAndDeleteAudio = DownloadAndDeleteAudio;
+  export const downloadImageToBase64 = DownloadImageToBase64;
+  export const saveStreamToDisk = SaveStreamToDisk;
+  export const readFromFile = ReadFromFile;
+  export const deleteFile = DeleteFile;
+  export const processImageForVisionAPI = ProcessImageForVisionAPI;
 }

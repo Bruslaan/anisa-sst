@@ -9,7 +9,7 @@ export namespace Types {
     id: string;
     userId: string;
     text?: string | undefined;
-    mediaUrl?: string[];
+    mediaUrl?: string;
     type: "audio" | "image" | "text";
     provider: "whatsapp" | "telegram";
     whatsapp?: WhatsappMessagePayload;
