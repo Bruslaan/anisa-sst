@@ -39,10 +39,6 @@ const processMessage = async (record: SQSRecord): Promise<void> => {
     sqsMessageId: record.messageId,
   });
 
-  logger.info("Processing SQS message", {
-    step: "start",
-    messageType: message.type,
-  });
 
   try {
     switch (message.type) {
@@ -56,16 +52,11 @@ const processMessage = async (record: SQSRecord): Promise<void> => {
         await handleTextMessage(message, logger);
         break;
       default:
-        logger.error("Unsupported message type", {
-          step: "error",
-          messageType: message.type,
-        });
+
         throw new Error(`Unsupported message type: ${message.type}`);
     }
 
-    logger.info("SQS message processed successfully", {
-      step: "completed",
-    });
+
   } catch (error) {
     logger.error(
       "Failed to process SQS message",
@@ -89,27 +80,16 @@ const handleAudioMessage = async (
     throw new Error("Audio message missing mediaId");
   }
 
-  logger.info("Processing audio message", {
-    step: "audio_download_start",
-    mediaId: message.mediaUrl,
-  });
 
   try {
     const transcribedText = await Whatsapp.downloadAndDeleteAudio(
       message.mediaUrl,
       async (audioFilePath: string) => {
-        logger.info("Transcribing audio file", {
-          step: "transcription_start",
-          filePath: audioFilePath,
-        });
+
 
         const transcription = await Anisa.transcribeAudio(audioFilePath);
 
-        logger.info("Audio transcribed successfully", {
-          step: "transcription_completed",
-          textLength: transcription.length,
-          transcription,
-        });
+
 
         return transcription;
       }
@@ -122,10 +102,7 @@ const handleAudioMessage = async (
       text: transcribedText,
     };
 
-    logger.info("Converting audio to text message", {
-      step: "audio_to_text_conversion",
-      transcribedLength: transcribedText.length,
-    });
+
 
     await handleTextMessage(textMessage, logger);
   } catch (error) {
@@ -145,11 +122,7 @@ const handleTextMessage = async (
   logger: ReturnType<typeof Logger.createContextLogger>
 ) => {
 
-  logger.info("Processing text message", {
-    step: "ai_request_start",
-    hasImage: !!message.mediaUrl,
-    textLength: message?.text?.length,
-  });
+
 
   const startTime = Date.now();
   const responseText = await Anisa.askAnisaFn({
@@ -159,17 +132,7 @@ const handleTextMessage = async (
   });
   const aiProcessingTime = Date.now() - startTime;
 
-  logger.info("AI response received", {
-    step: "ai_response_received",
-    responseType: responseText.type,
-    responseLength: responseText.content?.length || 0,
-    hasImageUrl: !!responseText.image_url,
-    processingTimeMs: aiProcessingTime,
-    totalTokens: responseText.total_tokens,
-    cost: responseText.cost,
-  });
 
-  // Append token and cost info to response text
   const costInfo =
     responseText.total_tokens && responseText.cost
       ? `\n\n_📊 ${
@@ -184,15 +147,6 @@ const handleTextMessage = async (
     mediaUrl: responseText.image_url || undefined,
   };
 
-  logger.info("Sending reply to provider", {
-    step: "reply_start",
-    answerId: message.answer.id,
-    answerType: message.answer.type,
-  });
 
   await ReplyService.replyToProvider(message);
-
-  logger.info("Reply sent successfully", {
-    step: "reply_sent",
-  });
 };

@@ -40,43 +40,24 @@ const processImageMedia = async (
 ): Promise<string | undefined> => {
     if (waMessage.type !== "image" || !waMessage.image?.id) return undefined;
 
-    logger.info("Processing image media", {
-        step: "start",
-        imageId: waMessage.image.id,
-    });
+
 
     try {
         const imageUrl = await getMediaURL(waMessage.image.id);
-        logger.info("Retrieved media URL", {
-            step: "media_url_retrieved",
-        });
+
 
         const base64Image = await downloadMediaToStream(imageUrl);
-        logger.info("Downloaded media stream", {
-            step: "media_downloaded",
-        });
+
 
         const stream = await streamToBase64(base64Image);
-        logger.info("Converted to base64", {
-            step: "base64_converted",
-        });
+
 
         const {publicUrl} = await uploadBase64Image(stream as string, "images");
-        logger.info("Uploaded image to Supabase", {
-            step: "uploaded",
-            publicUrl,
-        });
+
 
         return publicUrl;
     } catch (error) {
-        logger.error(
-            "Failed to process image media",
-            {
-                step: "error",
-                imageId: waMessage.image.id,
-            },
-            error as Error
-        );
+
         throw error;
     }
 };
@@ -106,13 +87,6 @@ const handleWhatsAppMessage = async (
             messageType: waMessage.type,
         });
 
-        logger.info("Processing WhatsApp message", {
-            step: "start",
-            messageType: waMessage.type,
-            hasText: !!waMessage.text?.body,
-            hasImage: waMessage.type === "image",
-            message: JSON.stringify(parsedBody),
-        });
 
         const mediaUrl =
             waMessage.type === "image"
@@ -131,10 +105,6 @@ const handleWhatsAppMessage = async (
             ...(mediaUrl && {mediaUrl}),
         };
 
-        logger.info("Sending message to SQS", {
-            step: "sqs_send",
-            queueUrl: Resource.MessageQueue.url,
-        });
 
         await sqsClient.send(
             new SendMessageCommand({
@@ -145,25 +115,14 @@ const handleWhatsAppMessage = async (
             })
         );
 
-        logger.info("Message sent to SQS successfully", {
-            step: "sqs_sent",
-        });
 
         const businessPhoneNumberId = getBusinessPhoneNumberId(parsedBody);
         if (businessPhoneNumberId) {
-            logger.info("Marking message as read", {
-                step: "mark_read",
-                businessPhoneNumberId,
-            });
+
             await Whatsapp.markAsRead(businessPhoneNumberId, waMessage.id);
-            logger.info("Message marked as read", {
-                step: "marked_read",
-            });
+
         }
 
-        logger.info("WhatsApp message processed successfully", {
-            step: "completed",
-        });
 
         return {
             statusCode: 200,
@@ -173,17 +132,7 @@ const handleWhatsAppMessage = async (
             }),
         };
     } catch (error) {
-        if (logger) {
-            logger.error(
-                "Failed to process WhatsApp message",
-                {
-                    step: "error",
-                },
-                error as Error
-            );
-        } else {
-            Logger.error("Failed to process WhatsApp message", {}, error as Error);
-        }
+
         return {
             statusCode: 200,
             body: "",
