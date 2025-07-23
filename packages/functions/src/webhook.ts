@@ -64,7 +64,7 @@ const handleWhatsAppMessage = async (
         }
 
         const waMessage = extractWAMessage(parsedBody);
-        console.info("Received WhatsApp message:", waMessage);
+        console.info("Received WhatsApp message:", waMessage.from, waMessage);
 
         const mediaUrl =
             waMessage.type === "image"
@@ -92,14 +92,14 @@ const handleWhatsAppMessage = async (
             })
         );
 
-        console.info("WhatsApp message sent to SQS");
+        console.info("WhatsApp message sent to SQS", waMessage.from);
 
         const businessPhoneNumberId = getBusinessPhoneNumberId(parsedBody);
         if (businessPhoneNumberId) {
             await Whatsapp.markAsRead(businessPhoneNumberId, waMessage.id);
         }
 
-        console.info("WhatsApp message marked as read");
+        console.info("WhatsApp message marked as read", waMessage.from);
 
         return {
             statusCode: 200,

@@ -32,7 +32,7 @@ const processMessage = async (record: SQSRecord): Promise<void> => {
 
     const message = Types.parseAnisaPayload(record.body);
 
-    console.info("processMessage called with:", message);
+    console.info("processMessage called with:", message.userId, message);
     try {
         switch (message.type) {
             case "text":
@@ -45,7 +45,7 @@ const processMessage = async (record: SQSRecord): Promise<void> => {
                 await handleTextMessage(message);
                 break;
             default:
-                console.error("Unsupported message type:", message.type);
+                console.error("Unsupported message type:", message.userId, message.type);
                 throw new Error(`Unsupported message type: ${message.type}`);
         }
 
@@ -62,7 +62,7 @@ const handleAudioMessage = async (
         throw new Error("Audio message missing mediaId");
     }
 
-    console.info("handleAudioMessage called");
+    console.info("handleAudioMessage called", message.userId);
 
     try {
         const transcribedText = await Whatsapp.downloadAndDeleteAudio(
@@ -74,7 +74,7 @@ const handleAudioMessage = async (
             }
         );
 
-        console.info("Transcription result:", transcribedText);
+        console.info("Transcription result:", message.userId, transcribedText);
 
         const textMessage: Types.AnisaPayload = {
             ...message,
@@ -100,7 +100,7 @@ const handleTextMessage = async (
         imageUrl: message.mediaUrl,
     });
 
-    console.log("Ai response:", responseText);
+    console.info("Ai response:", message.userId, responseText);
 
 
     const costInfo =
@@ -119,5 +119,5 @@ const handleTextMessage = async (
 
 
     await ReplyService.replyToProvider(message);
-    console.info("Reply to provider", message);
+    console.info("Reply to provider", message.userId, message);
 };
