@@ -3,14 +3,14 @@ import {EasyInputMessage, ResponseUsage} from "openai/resources/responses/respon
 import {ResponseStructureOutput} from "./types";
 import {analyze_image_tool, analyzeImageHandler} from "./tools/analyzeImageHandler";
 import {image_tool, generateImageFromUrls} from "./tools/editImageHandler";
-import {generate_image_tool, generateImageHandler} from "./tools/generateImageHandler";
+import {generateImageHandler} from "./tools/generateImageHandler";
 import {search_in_web_tool, searchInWebHandler} from "./tools/webSearch";
 
 const SYSTEM_PROMPT = "You are Anisa, a helpful AI assistant. You specialize in image processing and generation, but can also help with general questions and web searches when needed. For image tasks: use edit_image to modify or generate based on existing images or to create new images. For current information or research: use search_in_web. Only use tools when explicitly needed - respond directly for simple conversations.";
 
 const TOOLS = [image_tool, search_in_web_tool, analyze_image_tool];
 
-const calculateCost = (usage?: ResponseUsage) => 
+const calculateCost = (usage?: ResponseUsage) =>
     usage ? (0.1 / 1000000) * (usage.input_tokens || 0) + (0.4 / 1000000) * (usage.output_tokens || 0) : 0;
 
 const createResponse = (content: string, usage?: ResponseUsage): ResponseStructureOutput => ({
@@ -20,19 +20,19 @@ const createResponse = (content: string, usage?: ResponseUsage): ResponseStructu
     cost: calculateCost(usage),
 });
 
-const getDebugResponse = (functionCall: any, imageUrls?: string[], usage?: ResponseUsage) => 
+const getDebugResponse = (functionCall: any, imageUrls?: string[], usage?: ResponseUsage) =>
     createResponse(
         `DEBUG mode: Skipped function call ${functionCall.name} with arguments: ${functionCall.arguments} ${imageUrls?.join(", ") || ""}`,
         usage
     );
 
-const getErrorResponse = (usage?: ResponseUsage) => 
+const getErrorResponse = (usage?: ResponseUsage) =>
     createResponse(
         "I encountered an issue processing your request. Please try again or rephrase your question.",
         usage
     );
 
-const getUnknownToolResponse = (usage?: ResponseUsage) => 
+const getUnknownToolResponse = (usage?: ResponseUsage) =>
     createResponse(
         "Sorry, I don't know how to handle that request. Please try rephrasing.",
         usage
@@ -40,7 +40,7 @@ const getUnknownToolResponse = (usage?: ResponseUsage) =>
 
 const executeTool = async (functionCall: any, prompt: string, imageUrls: string[] = []) => {
     const args = JSON.parse(functionCall.arguments);
-    
+
     switch (functionCall.name) {
         case "edit_image":
             const withImages = args["needed_image_urls"] ? imageUrls : [];
