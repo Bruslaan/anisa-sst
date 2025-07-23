@@ -36,6 +36,9 @@ export const askAnisa = async (
         const previousMessages = await Supabase.getMessageHistory(userId, 8);
         const {messageHistory, imageUrls} =
             buildContextualHistory(previousMessages);
+
+        console.debug("Generate Response for history:", userId, messageHistory);
+
         const aiResponse = await generateResponse(messageHistory, imageUrls);
 
         const aiContent = aiResponse.image_url
@@ -49,7 +52,7 @@ export const askAnisa = async (
 
         return aiResponse;
     } catch (error) {
-        console.error("Error in askAnisa:", error);
+        console.error("Error in askAnisa:", payload.userId, error);
         return {
             type: "text",
             content: "An error occurred while processing your request.",

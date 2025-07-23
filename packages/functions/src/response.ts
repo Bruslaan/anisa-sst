@@ -32,7 +32,7 @@ const processMessage = async (record: SQSRecord): Promise<void> => {
 
     const message = Types.parseAnisaPayload(record.body);
 
-    console.info("processMessage called with:", message.userId, message);
+    console.info("ProcessMessage called with:", message.userId, message);
     try {
         switch (message.type) {
             case "text":

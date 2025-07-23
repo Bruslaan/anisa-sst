@@ -22,7 +22,6 @@ export const generateResponse = async (
     messageHistory: EasyInputMessage[] = [],
     imageUrls?: string[]
 ): Promise<ResponseStructureOutput> => {
-    console.debug("Generating response with message history:", messageHistory);
     const latestPrompt = messageHistory[messageHistory.length - 1]
         ?.content as string;
     if (!latestPrompt) {
