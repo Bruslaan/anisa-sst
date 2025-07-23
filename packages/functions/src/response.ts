@@ -50,7 +50,7 @@ const processMessage = async (record: SQSRecord): Promise<void> => {
         }
 
     } catch (error) {
-        console.error("processMessage errored with:", error);
+        console.error("ProcessMessage errored with:", message.userId, error);
         throw error;
     }
 };
@@ -85,7 +85,7 @@ const handleAudioMessage = async (
 
         await handleTextMessage(textMessage);
     } catch (error) {
-        console.error("handleAudioMessage errored with:", error);
+        console.error("handleAudioMessage errored with:", message.userId, error);
         throw error;
     }
 };
