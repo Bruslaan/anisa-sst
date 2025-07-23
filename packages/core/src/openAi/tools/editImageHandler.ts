@@ -19,9 +19,15 @@ export const image_tool: FunctionTool = {
                 type: 'string',
                 description: 'The prompt to generate or edit the image from.',
             },
+            needed_image_urls: {
+                type: "boolean",
+                default: false,
+                description:
+                    'Indicates whether the function needs image URLs to edit or generate the image. If true, the function will expect image URLs to be provided.',
+            }
         },
         additionalProperties: false,
-        required: ['prompt'],
+        required: ['prompt', "needed_image_urls"],
     },
 };
 
@@ -49,14 +55,10 @@ export const generateImageFromUrls = async (
         throw new Error('Prompt is required for image editing.');
     }
 
-    if (!imageUrls || imageUrls.length === 0) {
-        throw new Error('No image URLs provided for editing.');
-    }
-
     const content: ResponseInputContent[] = [
         {type: 'input_text', text: 'edit ' + prompt},
     ];
-
+    
     for (const imageUrl of imageUrls) {
         const base64Image = await downloadImageAsBase64(imageUrl);
         content.push({

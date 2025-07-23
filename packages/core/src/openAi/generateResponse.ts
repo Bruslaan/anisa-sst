@@ -48,8 +48,8 @@ export const generateResponse = async (
     if (response?.output?.[0]?.type === "function_call") {
         const functionCall = response.output[0];
 
+        console.debug("Function call detected", functionCall.name, functionCall.arguments);
         if (process.env.ANISA_DEBUG === "true") {
-            console.log("DEBUG mode: Function call skipped", functionCall.name, functionCall.arguments);
             return {
                 type: "text",
                 content: `DEBUG mode: Skipped function call ${functionCall.name} with arguments: ${functionCall.arguments} ${imageUrls?.join(", ")}`,
@@ -61,7 +61,8 @@ export const generateResponse = async (
         try {
             switch (functionCall.name) {
                 case "edit_image":
-                    return await generateImageFromUrls(latestPrompt, imageUrls || []);
+                    const withImages = JSON.parse(functionCall.arguments)["needed_image_urls"] ? imageUrls : []
+                    return await generateImageFromUrls(latestPrompt, withImages || []);
                 case "analyze_image":
                     return await analyzeImageHandler(latestPrompt, imageUrls || []);
                 case "generate_image":
