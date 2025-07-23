@@ -34,12 +34,13 @@ export const generateResponse = async (
         tools: [
             image_tool,
             search_in_web_tool,
+            analyze_image_tool,
         ],
         input: [
             {
                 role: "system",
                 content:
-                    "You are Anisa, a helpful AI assistant. You specialize in image processing and generation, but can also help with general questions and web searches when needed. For image tasks: use edit_image to modify or generate based on existing images ro to create new images. For current information or research: use search_in_web. Only use tools when explicitly needed - respond directly for simple conversations.",
+                    "You are Anisa, a helpful AI assistant. You specialize in image processing and generation, but can also help with general questions and web searches when needed. For image tasks: use edit_image to modify or generate based on existing images or to create new images. For current information or research: use search_in_web. Only use tools when explicitly needed - respond directly for simple conversations.",
             },
             ...messageHistory,
         ],

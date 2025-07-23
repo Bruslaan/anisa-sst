@@ -58,7 +58,7 @@ export const generateImageFromUrls = async (
     const content: ResponseInputContent[] = [
         {type: 'input_text', text: 'edit ' + prompt},
     ];
-    
+
     for (const imageUrl of imageUrls) {
         const base64Image = await downloadImageAsBase64(imageUrl);
         content.push({
@@ -69,7 +69,7 @@ export const generateImageFromUrls = async (
     }
 
     const response = await client().responses.create({
-        model: 'gpt-4.1',
+        model: 'gpt-4.1-nano',
         input: [
             {
                 role: 'user',

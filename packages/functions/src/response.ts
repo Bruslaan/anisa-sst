@@ -5,7 +5,7 @@ export const handler = async (
     event: SQSEvent
 ): Promise<{ batchItemFailures: Types.BatchItemFailure[] }> => {
 
-    console.info("Received SQS events:", event.Records.length);
+    console.info("Response Handler received SQS events:", event.Records.length);
     const results = await Promise.allSettled(event.Records.map(processMessage));
 
     const failedMessageIdentifiers = results

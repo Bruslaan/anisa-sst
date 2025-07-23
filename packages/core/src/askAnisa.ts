@@ -12,7 +12,7 @@ export type AnisaPayload = {
 
 const createMessage = (
     userId: string,
-    role: "user" | "assistant",
+    role: "user" | "assistant" | "developer",
     content?: string,
     imageUrl?: string
 ): Supabase.Message => ({
@@ -31,13 +31,19 @@ export const askAnisa = async (
         if (!userId) throw new Error("User ID is required.");
 
         const userMessage = createMessage(userId, "user", prompt, imageUrl);
+
+        if (payload.imageUrl) {
+            const developerMessage = createMessage(userId, "developer", "* User uploaded an image, take it into account *");
+            await Supabase.saveMessageToDatabase(userId, developerMessage);
+        }
+
         await Supabase.saveMessageToDatabase(userId, userMessage);
 
         const previousMessages = await Supabase.getMessageHistory(userId, 8);
         const {messageHistory, imageUrls} =
             buildContextualHistory(previousMessages);
 
-        console.debug("Generate Response for history:", userId, messageHistory);
+        console.debug("Generate Response for history:", userId, JSON.stringify(messageHistory));
 
         const aiResponse = await generateResponse(messageHistory, imageUrls);
 

@@ -52,9 +52,9 @@ export default $config({
             API_TOKEN: secrets.apiToken.value!,
             GENERATION_QUALITY: secrets.generationQuality.value!,
             GRAPH_API_TOKEN:
-                "EAANkZAStxEvQBPLaOKBuOlPSuXG1MWAJj3Q3KijxqY9Sl91yQedRZBsq5DPiH3XkV6Awcp8PWH1TlXK79CEPd1c23Tcv1FR3zetZCbhUDza7VCHGu0txKNNsgPwOeBwPlqauru2GJdOXiE9M1CASuoLGkvilkB9YX2WCpO5ohja76g6ILd1keqZCrO7sV5OhR6dO07szYaFsUzUBcCydZB1ZAzpDDkk0UrGHZAsUNRBscVyybcIEF0qUYOytiR6Os8ZD",
+                "EAANkZAStxEvQBPDa1Q9M0MMNMfseoBnrr68TqMrGq4ztD9JbBxnR6xxCssBZCEnaZCdYq8OqYZCRqU6t3QZCuh8ZAZBzvVQboy8vWYlw0puvOZBog8RocB2OmFFGXB5sZB7oZAJdjDhC4yxbIUJOXZC9OOXsU5xkiXCo6XxXdFDz7wj9HGa0AULOm8eF3m3ZBUnU0h49TZCOoyiUURaCHqYKWEJBR7mj3qqmZAlbDvG5b4Bh1FOoq7pJ18ZBK7uvEhnyOWItwZDZD",
             ENVIRONMENT: process.env.ENVIRONMENT || "development",
-            ANISA_DEBUG: "true",
+            ANISA_DEBUG: "false",
             ...overrides,
         });
 
