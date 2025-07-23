@@ -52,7 +52,7 @@ export default $config({
             API_TOKEN: secrets.apiToken.value!,
             GENERATION_QUALITY: secrets.generationQuality.value!,
             GRAPH_API_TOKEN:
-                "EAANkZAStxEvQBPM5KDZA2nt0s7wnYAR2SISfZANYAkdR43ksjRfY1uDMO9PKKCp4JIVMzG5GdsKW1pIbMnMXrlAIzH5Va0BEWYibzQHPXJeVvwroqdCtbZBWwSiQzUpCWsLxzZBhStbpq6TjsFZCMu17Y3qM6kdBU4vLZCZC4TkVVkpoFNoWtcMRiaA1uVzbAtj4ZBZBNm6hDW38u66huuYEAx3ZC3PbZBhfzigZC6FdBrZBgN2gZBVdZCAIiVQAYglgReOTBh4ZD",
+                "EAANkZAStxEvQBPLaOKBuOlPSuXG1MWAJj3Q3KijxqY9Sl91yQedRZBsq5DPiH3XkV6Awcp8PWH1TlXK79CEPd1c23Tcv1FR3zetZCbhUDza7VCHGu0txKNNsgPwOeBwPlqauru2GJdOXiE9M1CASuoLGkvilkB9YX2WCpO5ohja76g6ILd1keqZCrO7sV5OhR6dO07szYaFsUzUBcCydZB1ZAzpDDkk0UrGHZAsUNRBscVyybcIEF0qUYOytiR6Os8ZD",
             ENVIRONMENT: process.env.ENVIRONMENT || "development",
             ANISA_DEBUG: "true",
             ...overrides,
@@ -60,6 +60,7 @@ export default $config({
 
         const messageQueue = new sst.aws.Queue("MessageQueue", {
             fifo: true,
+            visibilityTimeout: "10 minutes",
         });
         messageQueue.subscribe({
             handler: "packages/functions/src/response.handler",

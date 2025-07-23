@@ -9,7 +9,7 @@ import {
     analyzeImageHandler,
 } from "./tools/analyzeImageHandler";
 import {
-    edit_image_tool,
+    image_tool,
     generateImageFromUrls,
 } from "./tools/editImageHandler";
 import {
@@ -32,16 +32,14 @@ export const generateResponse = async (
     const response = await client().responses.create({
         model: "gpt-4.1-nano",
         tools: [
-            analyze_image_tool,
-            edit_image_tool,
-            generate_image_tool,
+            image_tool,
             search_in_web_tool,
         ],
         input: [
             {
                 role: "system",
                 content:
-                    "You are Anisa, a helpful AI assistant. You specialize in image processing and generation, but can also help with general questions and web searches when needed. For image tasks: use analyze_image to understand images, edit_image to modify existing images, and generate_image to create new images. For current information or research: use search_in_web. Only use tools when explicitly needed - respond directly for simple conversations.",
+                    "You are Anisa, a helpful AI assistant. You specialize in image processing and generation, but can also help with general questions and web searches when needed. For image tasks: use edit_image to modify or generate based on existing images ro to create new images. For current information or research: use search_in_web. Only use tools when explicitly needed - respond directly for simple conversations.",
             },
             ...messageHistory,
         ],

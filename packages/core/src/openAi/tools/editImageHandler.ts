@@ -6,18 +6,18 @@ import {client} from '../client';
 import {uploadBase64Image} from '../../supabase/actions';
 import {ResponseStructureOutput} from '../types';
 
-export const edit_image_tool: FunctionTool = {
+export const image_tool: FunctionTool = {
     strict: false,
     type: 'function',
     name: 'edit_image',
     description:
-        'Edit images based on a prompt. Call this when user wants to modify, edit, or change existing images.',
+        'This Function is called to edit or generate images based on a prompt. It can modify existing images or generate new ones based on the provided prompt and image URLs.',
     parameters: {
         type: 'object',
         properties: {
             prompt: {
                 type: 'string',
-                description: 'The editing instruction for the image.',
+                description: 'The prompt to generate or edit the image from.',
             },
         },
         additionalProperties: false,
@@ -74,7 +74,7 @@ export const generateImageFromUrls = async (
                 content,
             },
         ],
-        tool_choice: 'required',
+        tool_choice: "required",
         tools: [{type: 'image_generation', quality: 'medium', size: 'auto'}],
     });
 
