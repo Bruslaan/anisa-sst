@@ -17,11 +17,15 @@ export const handler = async (
 
     console.info("Failed messages send back to the que. amount:", failedMessageIdentifiers.length);
 
+
     return {
-        batchItemFailures: failedMessageIdentifiers.map((id) => ({
-            itemIdentifier: id,
-        })),
-    };
+        batchItemFailures: []
+    }
+    // return {
+    //     batchItemFailures: failedMessageIdentifiers.map((id) => ({
+    //         itemIdentifier: id,
+    //     })),
+    // };
 };
 
 const processMessage = async (record: SQSRecord): Promise<void> => {
@@ -41,7 +45,7 @@ const processMessage = async (record: SQSRecord): Promise<void> => {
                 await handleTextMessage(message);
                 break;
             default:
-
+                console.error("Unsupported message type:", message.type);
                 throw new Error(`Unsupported message type: ${message.type}`);
         }
 

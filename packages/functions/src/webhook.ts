@@ -87,7 +87,7 @@ const handleWhatsAppMessage = async (
             new SendMessageCommand({
                 QueueUrl: Resource.MessageQueue.url,
                 MessageBody: JSON.stringify(sqsPayload),
-                MessageGroupId: waMessage.id,
+                MessageGroupId: waMessage.from,
                 MessageDeduplicationId: waMessage.id,
             })
         );
