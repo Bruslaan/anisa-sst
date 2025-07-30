@@ -1,7 +1,14 @@
+import {WhatsappMessage} from "./whatsapp/wa-types";
+import {Supabase} from "./supabase";
+import getOrCreateUser = Supabase.getOrCreateUser;
+import {detectLanguage} from "./i18n/language-detection";
+import {translate} from "./i18n/translations";
+import {reply, sendMessage} from "./whatsapp/helper";
+
 /**
  * Handler for interactive messages (button responses)
  */
-async function handleInteractiveMessage(
+export async function handleInteractiveMessage(
     message: WhatsappMessage,
 ) {
     if (message.type !== "interactive") {
@@ -25,7 +32,7 @@ async function handleInteractiveMessage(
 
         case "not_now":
             // User doesn't want to refill now
-            await metaService.sendMessage(
+            await sendMessage(
                 translate('notNowResponse', language)
             );
             break;
@@ -39,7 +46,7 @@ async function handleInteractiveMessage(
 
         default:
             // Unknown button ID
-            await metaService.sendMessage(
+            await sendMessage(
                 translate('unknownButtonResponse', language)
             );
     }
