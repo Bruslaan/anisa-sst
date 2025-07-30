@@ -1,5 +1,6 @@
 import {SQSEvent, SQSRecord} from "aws-lambda";
-import {Types, ReplyService, Anisa, Whatsapp} from "@ANISA/core";
+import {Types, ReplyService, Anisa, Whatsapp, Supabase} from "@ANISA/core";
+import getOrCreateUser = Supabase.getOrCreateUser;
 
 const transcribeAudio = async (message: Types.AnisaPayload) => {
     if (!message.mediaUrl) throw new Error("Audio message missing mediaId");
@@ -37,16 +38,22 @@ const generateResponse = async (message: Types.AnisaPayload) => {
 const processMessage = async (record: SQSRecord) => {
     const message = Types.parseAnisaPayload(record.body);
 
+    const {credits} = await getOrCreateUser(message.userId);
+
+    console.info("4. Processing WhatsApp message:", message.userId);
+
     const processedMessage = message.type === "audio"
         ? await transcribeAudio(message)
         : message;
 
     const messageWithResponse = await generateResponse(processedMessage);
+
+    console.info("5. Generated response for message:", message.userId, messageWithResponse.answer);
     await ReplyService.replyToProvider(messageWithResponse);
 };
 
 export const handler = async (event: SQSEvent) => {
-    console.info("Processing", event.Records.length, "messages");
+    console.info("3. Processing", event.Records.length, "messages");
 
     const results = await Promise.allSettled(
         event.Records.map(processMessage)

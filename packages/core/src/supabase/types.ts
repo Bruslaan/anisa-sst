@@ -11,3 +11,12 @@ export type Message = {
         | undefined;
     created_at?: string | undefined;
 };
+
+
+export type User = {
+    id: string;
+    phone_number: string;
+    created_at?: string;
+    credits?: number;
+    payment_id?: string;
+};

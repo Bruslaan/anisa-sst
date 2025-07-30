@@ -10,7 +10,7 @@ export const search_in_web_tool: FunctionTool = {
     strict: true,
     type: 'function',
     name: 'search_in_web',
-    description: 'Search the web for current information, news, facts, or research. Use only when the user asks for recent information, current events, or specific factual data that requires real-time search.',
+    description: 'Call this tool to find current information, facts, or news from the web. Use for questions that cannot be answered with general knowledge, such as those about recent events, specific people, or detailed topics.',
     parameters: {
         type: 'object',
         properties: {
