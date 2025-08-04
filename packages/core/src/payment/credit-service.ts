@@ -1,13 +1,11 @@
 import {CREDIT_PACKAGES, createCheckoutSession, CREDIT_PACKAGES_RU} from "./stripe-service";
 import createPayment from "../payment/yookassa-service";
-import {detectLanguage} from "../i18n/language-detection";
-import {translate} from "../i18n/translations";
-import {Whatsapp} from "../whatsapp";
-import sendMessage = Whatsapp.sendMessage;
-import sendInteractiveButtons = Whatsapp.sendInteractiveButtons;
+import {detectLanguage, translate} from "../i18n";
+import {sendMessage, sendInteractiveButtons} from "../whatsapp/helper";
 import {User} from "../supabase/types";
 import {replyWithCallToAction} from "../whatsapp/helper";
 import {addCredits, getUserCredits} from "../supabase/credits";
+import {WhatsappMessage} from "../whatsapp/wa-types";
 
 /**
  * Check if a user has credits and handle the case when they don't
@@ -23,11 +21,18 @@ export async function checkCredits(user: User): Promise<number> {
  */
 export async function sendNoCreditsMessage(
     user: User,
+    business_phone_number_id: string,
 ): Promise<void> {
     const language = detectLanguage(user.phone_number);
 
     await sendMessage(
-        translate('noCredits', language)
+        business_phone_number_id,
+        {
+            from: user.phone_number,
+            text: {
+                body: translate('noCredits', language)
+            }
+        } as WhatsappMessage
     );
 
     // Send "Refill Credits?" button
@@ -53,10 +58,19 @@ export async function sendNoCreditsMessage(
  */
 export async function sendCreditPackageOptions(
     user: User,
+    business_phone_number_id: string,
 ): Promise<void> {
     const language = detectLanguage(user.phone_number);
 
-    await sendMessage(translate('selectPackage', language));
+    await sendMessage(
+        business_phone_number_id,
+        {
+            from: user.phone_number,
+            text: {
+                body: translate('selectPackage', language)
+            }
+        } as WhatsappMessage
+    );
 
     // Get currency and format based on language
     const packages = language === 'ru' ? CREDIT_PACKAGES_RU : CREDIT_PACKAGES;
@@ -82,6 +96,7 @@ export async function sendCreditPackageOptions(
 export async function handleCreditPackageSelection(
     user: User,
     packageId: string,
+    business_phone_number_id: string,
 ): Promise<void> {
     // Extract the actual package ID from the button ID (e.g., "credit_pkg_basic" -> "basic")
     const actualPackageId = packageId.replace("credit_pkg_", "");
@@ -96,7 +111,13 @@ export async function handleCreditPackageSelection(
 
     if (!selectedPackage) {
         await sendMessage(
-            translate('packageUnavailable', language)
+            business_phone_number_id,
+            {
+                from: user.phone_number,
+                text: {
+                    body: translate('packageUnavailable', language)
+                }
+            } as WhatsappMessage
         );
         return;
     }
@@ -117,6 +138,10 @@ export async function handleCreditPackageSelection(
 
         if (yookassaPayment?.confirmation?.confirmation_url) {
             await replyWithCallToAction({
+                business_phone_number_id: business_phone_number_id,
+                message: {
+                    from: user.phone_number
+                } as WhatsappMessage,
                 header: translate('purchaseHeader', language),
                 body: translate('purchaseBody', language, {
                     credits: selectedPackage.credits.toString(),
@@ -128,7 +153,13 @@ export async function handleCreditPackageSelection(
             });
         } else {
             await sendMessage(
-                translate('paymentError', language)
+                business_phone_number_id,
+                {
+                    from: user.phone_number,
+                    text: {
+                        body: translate('paymentError', language)
+                    }
+                } as WhatsappMessage
             );
         }
     } else {
@@ -152,7 +183,13 @@ export async function handleCreditPackageSelection(
             });
         } else {
             await sendMessage(
-                translate('paymentError', language)
+                business_phone_number_id,
+                {
+                    from: user.phone_number,
+                    text: {
+                        body: translate('paymentError', language)
+                    }
+                } as WhatsappMessage
             );
         }
     }

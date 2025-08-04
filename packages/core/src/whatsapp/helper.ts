@@ -228,14 +228,23 @@ const sendMessage = async (
     });
 };
 
-const replyWithCallToAction = async (
-    business_phone_number_id: string,
-    message: WhatsappMessage,
-    header: string,
-    body: string,
-    footer: string,
-    buttonText: string,
-    url: string
+const replyWithCallToAction = async ({
+                                         business_phone_number_id,
+                                         message,
+                                         header,
+                                         body,
+                                         footer,
+                                         buttonText,
+                                         url
+                                     }: {
+                                         business_phone_number_id: string,
+                                         message: WhatsappMessage,
+                                         header: string,
+                                         body: string,
+                                         footer: string,
+                                         buttonText: string,
+                                         url: string
+                                     }
 ) => {
     return axios({
         method: 'POST',

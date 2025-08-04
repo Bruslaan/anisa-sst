@@ -30,7 +30,7 @@ export async function handleInteractiveMessage(
     switch (buttonId) {
         case "refill_credits":
             // User wants to refill credits
-            await sendCreditPackageOptions(user);
+            await sendCreditPackageOptions(user, business_phone_number_id);
             break;
 
         case "not_now":
@@ -49,7 +49,7 @@ export async function handleInteractiveMessage(
         case "credit_pkg_standard":
         case "credit_pkg_premium":
             // User selected a credit package
-            await handleCreditPackageSelection(user, buttonId);
+            await handleCreditPackageSelection(user, buttonId, business_phone_number_id);
             break;
 
         default:
