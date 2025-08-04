@@ -12,6 +12,7 @@ import {
     getBusinessPhoneNumberId,
 } from "@ANISA/core";
 import {Resource} from "sst";
+import {handleInteractiveMessage} from "@ANISA/core/interactive-message";
 
 const sqsClient = new SQSClient({region: process.env.AWS_REGION || "eu-central-1"});
 
@@ -78,7 +79,10 @@ const handleMessage = async (event: APIGatewayProxyEventV2): Promise<APIGatewayP
 
         if (waMessage.type === "interactive") {
             console.debug("Interactive message", waMessage.from);
-            await handleInteractiveMessage(metaService, message);
+            const businessPhoneNumberId = getBusinessPhoneNumberId(parsedBody);
+            if (businessPhoneNumberId) {
+                await handleInteractiveMessage(waMessage, businessPhoneNumberId);
+            }
             return {statusCode: 200, body: JSON.stringify({message: "Message processed successfully"})};
         }
 
