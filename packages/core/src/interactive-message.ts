@@ -5,6 +5,7 @@ import {detectLanguage} from "./i18n/language-detection";
 import {translate} from "./i18n/translations";
 import {reply, sendMessage} from "./whatsapp/helper";
 import {handleCreditPackageSelection, sendCreditPackageOptions} from "./payment/credit-service";
+import {User} from "./supabase/types";
 
 /**
  * Handler for interactive messages (button responses)
@@ -12,6 +13,7 @@ import {handleCreditPackageSelection, sendCreditPackageOptions} from "./payment/
 export async function handleInteractiveMessage(
     message: WhatsappMessage,
     business_phone_number_id: string,
+    user: User
 ) {
     if (message.type !== "interactive") {
         return;
@@ -22,9 +24,7 @@ export async function handleInteractiveMessage(
         return;
     }
 
-    const user = await getOrCreateUser(message.from);
     const language = detectLanguage(message.from);
-
 
     // Handle different button responses
     switch (buttonId) {
