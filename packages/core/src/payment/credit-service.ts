@@ -37,6 +37,10 @@ export async function sendNoCreditsMessage(
 
     // Send "Refill Credits?" button
     await sendInteractiveButtons({
+        business_phone_number_id: business_phone_number_id,
+        message: {
+            from: user.phone_number
+        } as WhatsappMessage,
         header: translate('creditsRequiredHeader', language),
         body: translate('refillQuestion', language),
         footer: translate('buttonProceed', language),
@@ -83,6 +87,10 @@ export async function sendCreditPackageOptions(
     }));
 
     await sendInteractiveButtons({
+        business_phone_number_id: business_phone_number_id,
+        message: {
+            from: user.phone_number
+        } as WhatsappMessage,
         header: translate('packageHeader', language),
         body: translate('packageBody', language),
         footer: translate('packageFooter', language),
@@ -172,6 +180,10 @@ export async function handleCreditPackageSelection(
 
         if (paymentLink.success && paymentLink.url) {
             await replyWithCallToAction({
+                business_phone_number_id: business_phone_number_id,
+                message: {
+                    from: user.phone_number
+                } as WhatsappMessage,
                 header: translate('purchaseHeader', language),
                 body: translate('purchaseBody', language, {
                     credits: selectedPackage.credits.toString(),

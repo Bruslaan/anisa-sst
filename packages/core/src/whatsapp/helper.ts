@@ -328,13 +328,21 @@ const replyWithCallToAction2 = async (
     return JSON.stringify(replyWithCallToActionResponse);
 };
 
-const sendInteractiveButtons = async (
-    business_phone_number_id: string,
-    message: WhatsappMessage,
-    header: string,
-    body: string,
-    footer: string,
-    buttons: Array<{ id: string; title: string }>
+const sendInteractiveButtons = async ({
+                                          business_phone_number_id,
+                                          message,
+                                          header,
+                                          body,
+                                          footer,
+                                          buttons
+                                      }: {
+                                          business_phone_number_id: string,
+                                          message: WhatsappMessage,
+                                          header: string,
+                                          body: string,
+                                          footer: string,
+                                          buttons: Array<{ id: string; title: string }>
+                                      }
 ) => {
     return axios({
         method: 'POST',
