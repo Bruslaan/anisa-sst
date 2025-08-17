@@ -6,6 +6,7 @@ import sharp from "sharp";
 const MAX_DIMENSION = 1536; // OpenAI recommends images around 768px-2048px
 const MIN_DIMENSION = 250;
 const GRAPH_API_TOKEN = process.env.GRAPH_API_TOKEN;
+const WA_API_VERSION = process.env.WA_VERSION || "v21.0";
 
 export const getTests = async (url: string) => {
     const mediastream = await axios({
@@ -37,7 +38,7 @@ export const getMediaURL = async (mediaID: string) => {
         data: {url},
     } = await axios({
         method: "GET",
-        url: `https://graph.facebook.com/v23.0/${mediaID}/`,
+        url: `https://graph.facebook.com/${WA_API_VERSION}/${mediaID}/`,
         headers: {
             Authorization: `Bearer ${GRAPH_API_TOKEN}`,
         },

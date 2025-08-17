@@ -12,11 +12,6 @@ import {
     getBusinessPhoneNumberId, Supabase,
 } from "@ANISA/core";
 import {Resource} from "sst";
-import {handleInteractiveMessage} from "@ANISA/core/interactive-message";
-import getOrCreateUser = Supabase.getOrCreateUser;
-import sendMessage = Whatsapp.sendMessage;
-import {detectLanguage, translate} from "@ANISA/core/i18n";
-import sendInteractiveButtons = Whatsapp.sendInteractiveButtons;
 
 const sqsClient = new SQSClient({region: process.env.AWS_REGION || "eu-central-1"});
 
@@ -76,56 +71,8 @@ const handleMessage = async (event: APIGatewayProxyEventV2): Promise<APIGatewayP
             return {statusCode: 200, body: ""};
         }
 
-
         const waMessage = extractWAMessage(parsedBody);
-
         console.info("1. Received WhatsApp message:", waMessage.from, waMessage);
-
-        const user = await getOrCreateUser(waMessage.from);
-        if (waMessage.type === "interactive") {
-            console.debug("Interactive message", waMessage.from);
-            const businessPhoneNumberId = getBusinessPhoneNumberId(parsedBody);
-            if (businessPhoneNumberId) {
-                await handleInteractiveMessage(waMessage, businessPhoneNumberId, user);
-            }
-            return {statusCode: 200, body: JSON.stringify({message: "Message processed successfully"})};
-        }
-
-        if (user.credits! <= 0) {
-            const language = detectLanguage(waMessage.from);
-            const businessPhoneNumberId = getBusinessPhoneNumberId(parsedBody);
-            if (!businessPhoneNumberId) {
-                return {statusCode: 200, body: JSON.stringify({message: "Message processed successfully"})};
-            }
-            await sendMessage(
-                businessPhoneNumberId,
-                {
-                    ...waMessage, text: {
-                        body: translate('noCredits', language)
-                    }
-                },
-            );
-
-            await sendInteractiveButtons({
-                business_phone_number_id: businessPhoneNumberId,
-                message: waMessage,
-                header: translate('creditsRequiredHeader', language),
-                body: translate('refillQuestion', language),
-                footer: translate('buttonProceed', language),
-                buttons: [
-                    {
-                        id: "refill_credits",
-                        title: translate('yesRefill', language)
-                    },
-                    {
-                        id: "not_now",
-                        title: translate('notNow', language)
-                    },
-                ],
-            });
-            return {statusCode: 200, body: JSON.stringify({message: "Message processed successfully"})};
-        }
-
 
         const mediaUrl = await getMediaUrl(waMessage);
         const payload = createPayload(waMessage, parsedBody, mediaUrl);
