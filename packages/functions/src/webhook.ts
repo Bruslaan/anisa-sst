@@ -53,7 +53,7 @@ const sendToQueue = async (payload: Types.AnisaPayload) =>
         QueueUrl: Resource.MessageQueue.url,
         MessageBody: JSON.stringify(payload),
         MessageGroupId: payload.userId,
-        MessageDeduplicationId: payload.id,
+        MessageDeduplicationId: payload.id + `${Math.random()}`,
     }));
 
 const markAsRead = async (parsedBody: any, messageId: string) => {
@@ -78,8 +78,8 @@ const handleMessage = async (event: APIGatewayProxyEventV2): Promise<APIGatewayP
         const payload = createPayload(waMessage, parsedBody, mediaUrl);
 
         await sendToQueue(payload);
-        await markAsRead(parsedBody, waMessage.id);
-        console.info("2. Message sent to SQS");
+        // await markAsRead(parsedBody, waMessage.id);
+        console.info("2. Message sent to SQS", waMessage.from);
 
         return {statusCode: 200, body: JSON.stringify({message: "Message processed successfully"})};
     } catch (error) {

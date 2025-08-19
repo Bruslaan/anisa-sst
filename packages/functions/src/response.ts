@@ -49,7 +49,13 @@ const processMessage = async (record: SQSRecord) => {
     const messageWithResponse = await generateResponse(processedMessage);
 
     console.info("5. Generated response for message:", message.userId, messageWithResponse.answer);
-    await ReplyService.replyToProvider(messageWithResponse);
+    try {
+        await ReplyService.replyToProvider(messageWithResponse);
+    } catch (error) {
+        console.error("6. Cannot reply Message to provider with error", error);
+    }
+
+    console.info("6. Replied Message to provider:", messageWithResponse.provider, message.userId);
 };
 
 export const handler = async (event: SQSEvent) => {

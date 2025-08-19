@@ -8,7 +8,7 @@ export async function getOrCreateUser(phoneNumber: string): Promise<User> {
         const {data: existingUser, error: fetchError} = await supabase()
             .from('users')
             .select('*')
-            .eq('user_id', phoneNumber)
+            .eq('phone_number', phoneNumber)
             .single();
 
         if (fetchError) {
@@ -55,7 +55,7 @@ export async function saveMessageToDatabase(
     message: Omit<Message, 'user_id'>
 ) {
     const {data, error} = await supabase()
-        .from('messages')
+        .from('messagesv2')
         .insert({
             ...message,
             user_id: userId,
@@ -129,7 +129,7 @@ export async function saveMessagesToDatabase(
     messages: Omit<Message, 'user_id'>[]
 ) {
     const {data, error} = await supabase()
-        .from('messages')
+        .from('messagesv2')
         .upsert(messages.map((message) => ({...message, user_id: userID})))
         .select();
 
@@ -141,7 +141,7 @@ export async function saveMessagesToDatabase(
 
 export async function getMessageHistory(userId: string, limit: number = 15) {
     const {data, error} = await supabase()
-        .from('messages')
+        .from('messagesv2')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', {ascending: false})
