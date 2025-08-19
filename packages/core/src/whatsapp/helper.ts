@@ -4,7 +4,7 @@ import FormData from 'form-data';
 
 const GRAPH_API_TOKEN = process.env.GRAPH_API_TOKEN;
 
-const WA_API_VERSION = 'v23.0'; // Update this to the latest version if needed
+const WA_API_VERSION = process.env.WA_VERSION || "v21.0";
 export const isAWhatsappMessage = (
     unknownObject: unknown
 ): unknownObject is WhatsappMessagePayload => {
@@ -22,7 +22,7 @@ export const isAWhatsappMessage = (
         statuses?: Array<{ status: string }>;
     };
     if (changes?.statuses) {
-        return false; // This will make the handler return early with 200
+        return false;
     }
 
     return Boolean(
@@ -228,14 +228,23 @@ const sendMessage = async (
     });
 };
 
-const replyWithCallToAction = async (
-    business_phone_number_id: string,
-    message: WhatsappMessage,
-    header: string,
-    body: string,
-    footer: string,
-    buttonText: string,
-    url: string
+const replyWithCallToAction = async ({
+                                         business_phone_number_id,
+                                         message,
+                                         header,
+                                         body,
+                                         footer,
+                                         buttonText,
+                                         url
+                                     }: {
+                                         business_phone_number_id: string,
+                                         message: WhatsappMessage,
+                                         header: string,
+                                         body: string,
+                                         footer: string,
+                                         buttonText: string,
+                                         url: string
+                                     }
 ) => {
     return axios({
         method: 'POST',
@@ -319,13 +328,21 @@ const replyWithCallToAction2 = async (
     return JSON.stringify(replyWithCallToActionResponse);
 };
 
-const sendInteractiveButtons = async (
-    business_phone_number_id: string,
-    message: WhatsappMessage,
-    header: string,
-    body: string,
-    footer: string,
-    buttons: Array<{ id: string; title: string }>
+const sendInteractiveButtons = async ({
+                                          business_phone_number_id,
+                                          message,
+                                          header,
+                                          body,
+                                          footer,
+                                          buttons
+                                      }: {
+                                          business_phone_number_id: string,
+                                          message: WhatsappMessage,
+                                          header: string,
+                                          body: string,
+                                          footer: string,
+                                          buttons: Array<{ id: string; title: string }>
+                                      }
 ) => {
     return axios({
         method: 'POST',
